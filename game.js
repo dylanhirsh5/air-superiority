@@ -49,6 +49,44 @@
       'online.hostListening': 'Control Tower broadcasting — awaiting captains at the gate...',
       'online.hostReady': 'Boarding Approved — {n} captains ready for departure!',
       'online.hostOffline': 'PeerJS signaling unavailable — Solo & Local modes remain ready.',
+      // --- Link diagnostics & connection detail (EN only; other locales fall back) ---
+      'online.detailOpening': 'Opening signalling socket via {server}…',
+      'online.detailLive': 'Tower LIVE on {server} — room {code} is accepting captains.',
+      'online.detailTimeout': 'Signalling tower did not answer in time.',
+      'online.detailFallback': 'Falling back to {server}…',
+      'online.detailAllDown': 'All signalling towers unreachable — check your network or add a custom tower in Settings → Network.',
+      'online.detailReconnecting': 'Signalling socket parked — reconnecting…',
+      'online.detailDropped': 'Signalling socket kept dropping.',
+      'online.detailIdBusy': 'Room code still held by a previous session — retry {n}/3…',
+      'online.detailNewCode': 'Previous session still holding the old code. New room code issued: {code}',
+      'online.detailNoLib': 'PeerJS library failed to load (blocked by an extension, firewall or offline).',
+      'online.detailGuestJoined': '{name} boarded the departure lounge.',
+      'online.detailDialing': 'Signalling OK — dialling room {code}…',
+      'online.detailRetryHost': 'No answer from that room yet — retry {n}/3…',
+      'online.detailRetryChannel': 'Data channel stalled — re-dialling {n}/2…',
+      'online.detailRelayNeeded': 'Signalling worked but no peer-to-peer tunnel could be opened. You are very likely behind a strict (symmetric) NAT — add a TURN relay in Settings → Network.',
+      'online.detailChannelOpen': 'Data channel open — requesting boarding clearance…',
+      'online.detailChannelError': 'Data channel error — attempting to recover…',
+      'online.detailApproved': 'Boarding approved by the Host Captain.',
+      'online.detailHostClosed': 'The Host Captain closed the departure lounge.',
+      'online.detailRoomFull': 'That departure lounge already has 4 captains.',
+      'online.detailInProgress': 'That match has already departed — ask the host for a rematch invite.',
+      'online.detailBadPass': 'Gate Pass rejected by the Control Tower.',
+      'online.detailBadCode': 'Enter a full room code, for example TWA-404.',
+      'online.detailFetchRelay': 'Fetching TURN relay credentials…',
+      'online.detailSilence': 'No heartbeat from the Control Tower for 20s — link may be dead.',
+      'online.inviteLinkLabel': 'ONE-CLICK INVITE LINK',
+      'online.copyLinkBtn': 'COPY LINK',
+      'online.testLinkBtn': 'TEST MY CONNECTION',
+      'online.testRunning': 'Testing link…',
+      'online.diagPeerScript': 'PeerJS library',
+      'online.diagWebrtc': 'WebRTC support',
+      'online.diagHost': 'Local candidates',
+      'online.diagSrflx': 'Public address (STUN)',
+      'online.diagRelay': 'Relay available (TURN)',
+      'online.diagRelayHint': 'No TURN relay. Direct play usually still works; if a friend cannot connect, add a relay in Settings → Network.',
+      'online.diagAllGood': 'All green — this device can host or join online matches.',
+      'online.diagNoStun': 'Could not discover a public address. A restrictive firewall or VPN is blocking WebRTC.',
       'online.connectedRosterLabel': 'DEPARTURE LOUNGE ROSTER (2–4 CAPTAINS)',
       'online.boardedCount': '{n} / 4 BOARDED',
       'online.enterRoomCode': 'ENTER ROOM CODE',
@@ -2009,6 +2047,26 @@
     'SYNDICATE'
   ];
 
+  // Livery names mirror the setup swatches so a reassigned colour still reads
+  // correctly in the lobby roster and the standings panel.
+  const LIVERY_NAMES = {
+    '#D1192A': 'TWA Crimson',
+    '#1E4DB7': 'Pan Am Azure',
+    '#111111': 'Jet Black',
+    '#0B6E6E': 'Seafoam Teal',
+    '#C2410C': 'Burnt Tangerine',
+    '#8A8B2C': 'Olive Gold',
+    '#8C9196': 'Concorde Silver',
+    '#6B2D5B': 'Plum Lounge',
+    '#C08A2E': 'Desert Ochre',
+    '#E3B505': 'Canary Yellow',
+    '#2E7D32': 'Continental Green'
+  };
+
+  function liveryNameFor(hex, fallback) {
+    return LIVERY_NAMES[String(hex || '').toUpperCase()] || fallback || hex;
+  }
+
   const AI_COLOR_PALETTE = [
     '#0B6E6E',
     '#1E4DB7',
@@ -2706,6 +2764,17 @@
     onlineJoinStatusText: document.getElementById('online-join-status-text'),
     onlineGuestCountBadge: document.getElementById('online-guest-count-badge'),
     onlineGuestRoster: document.getElementById('online-guest-roster'),
+    onlineHostDetail: document.getElementById('online-host-detail'),
+    onlineJoinDetail: document.getElementById('online-join-detail'),
+    onlineInviteLink: document.getElementById('online-invite-link'),
+    onlineCopyLinkBtn: document.getElementById('online-copy-link-btn'),
+    onlineTestLinkBtn: document.getElementById('online-test-link-btn'),
+    onlineDiagList: document.getElementById('online-diag-list'),
+    onlineDiagSummary: document.getElementById('online-diag-summary'),
+    onlineCustomSignal: document.getElementById('online-custom-signal'),
+    onlineCustomTurn: document.getElementById('online-custom-turn'),
+    onlineTurnApi: document.getElementById('online-turn-api'),
+    onlineSaveNetBtn: document.getElementById('online-save-net-btn'),
     turnLimitGroup: document.getElementById('turn-limit-group'),
     setupDirectivesBox: document.getElementById('setup-directives-box'),
     startGameBtn: document.getElementById('start-game-btn'),
@@ -3572,11 +3641,99 @@
   // 9. INTERACTIVE CAMERA PAN & ZOOM SYSTEM
   // ============================================================================
 
+  // The blueprint is authored in a fixed 1100x620 "world". The canvas element,
+  // however, is whatever shape the device gives us — a 16:9 desktop panel or a
+  // tall, narrow phone board. `view` maps one onto the other:
+  //
+  //   screen_css = world * zoom * fit + offset
+  //
+  // Backing-store pixels are allocated at devicePixelRatio so text and pins stay
+  // crisp on retina phones instead of being stretched out of a 1100x620 bitmap.
+  const view = {
+    cssW: VIRTUAL_W,
+    cssH: VIRTUAL_H,
+    dpr: 1,
+    fit: 1,
+    offsetX: 0,
+    offsetY: 0,
+    uiScale: 1,
+    isCompact: false
+  };
+
+  function resizeBoardCanvas() {
+    const canvas = dom.boardCanvas;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const cssW = Math.max(240, Math.round(rect.width));
+    const cssH = Math.max(200, Math.round(rect.height));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+    view.cssW = cssW;
+    view.cssH = cssH;
+    view.dpr = dpr;
+
+    const targetW = Math.round(cssW * dpr);
+    const targetH = Math.round(cssH * dpr);
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
+
+    // Uniform "contain" fit keeps the terminal's proportions intact on every
+    // screen — no more horizontally squashed pins on portrait phones.
+    view.fit = Math.min(cssW / VIRTUAL_W, cssH / VIRTUAL_H);
+    view.offsetX = (cssW - VIRTUAL_W * view.fit) / 2;
+    view.offsetY = (cssH - VIRTUAL_H * view.fit) / 2;
+
+    // When the board is drawn small, pins and labels are scaled back up in world
+    // units so they keep a usable on-screen size on a phone.
+    view.isCompact = cssW < 700;
+    view.uiScale = Math.max(1, Math.min(2.4, 0.62 / Math.max(0.0001, view.fit)));
+
+    updateZoomButtonLabel();
+  }
+
+  // Effective on-screen scale of one world unit, used to drop fine detail that
+  // would be unreadable anyway.
+  function effectiveScale() {
+    return view.fit * state.camera.zoom * view.uiScale;
+  }
+
+  function applyViewTransform(context) {
+    const k = view.dpr;
+    context.setTransform(k, 0, 0, k, 0, 0);
+    context.translate(view.offsetX, view.offsetY);
+    context.scale(view.fit, view.fit);
+  }
+
   function resetCamera() {
     state.camera.x = 0;
     state.camera.y = 0;
-    state.camera.zoom = 1.0;
+    // On a tall phone board the contained world leaves big empty margins, so
+    // open zoomed in far enough to fill the frame and let the player pan.
+    state.camera.zoom = coverZoom();
+    clampCameraToWorld();
     updateZoomButtonLabel();
+  }
+
+  function coverZoom() {
+    if (!view.fit) return 1;
+    const worldW = VIRTUAL_W * view.fit;
+    const worldH = VIRTUAL_H * view.fit;
+    const need = Math.max(view.cssW / worldW, view.cssH / worldH);
+    return Math.max(1, Math.min(2.2, need));
+  }
+
+  // Keeps the terminal on screen: the player can pan, but never into the void.
+  function clampCameraToWorld() {
+    const z = state.camera.zoom;
+    const margin = 120;
+    const minX = view.cssW / view.fit - VIRTUAL_W * z - margin;
+    const maxX = margin;
+    const minY = view.cssH / view.fit - VIRTUAL_H * z - margin;
+    const maxY = margin;
+    state.camera.x = Math.min(maxX, Math.max(Math.min(minX, maxX), state.camera.x));
+    state.camera.y = Math.min(maxY, Math.max(Math.min(minY, maxY), state.camera.y));
   }
 
   function updateZoomButtonLabel() {
@@ -3587,25 +3744,27 @@
 
   function screenToWorld(clientX, clientY) {
     const rect = dom.boardCanvas.getBoundingClientRect();
-    const canvasX = ((clientX - rect.left) / rect.width) * VIRTUAL_W;
-    const canvasY = ((clientY - rect.top) / rect.height) * VIRTUAL_H;
+    const relX = clientX - rect.left;
+    const relY = clientY - rect.top;
+    // Undo the fit/offset to land back in the 1100x620 authoring space
+    const canvasX = (relX - view.offsetX) / view.fit;
+    const canvasY = (relY - view.offsetY) / view.fit;
     return {
       x: (canvasX - state.camera.x) / state.camera.zoom,
       y: (canvasY - state.camera.y) / state.camera.zoom,
       canvasX,
       canvasY,
-      relX: clientX - rect.left,
-      relY: clientY - rect.top
+      relX,
+      relY
     };
   }
 
   function worldToScreen(wx, wy) {
-    const rect = dom.boardCanvas.getBoundingClientRect();
     const canvasX = wx * state.camera.zoom + state.camera.x;
     const canvasY = wy * state.camera.zoom + state.camera.y;
     return {
-      x: (canvasX / VIRTUAL_W) * rect.width,
-      y: (canvasY / VIRTUAL_H) * rect.height
+      x: canvasX * view.fit + view.offsetX,
+      y: canvasY * view.fit + view.offsetY
     };
   }
 
@@ -3617,6 +3776,7 @@
     state.camera.zoom = clamped;
     state.camera.x = focalCanvasX - worldFocalX * clamped;
     state.camera.y = focalCanvasY - worldFocalY * clamped;
+    clampCameraToWorld();
     updateZoomButtonLabel();
   }
 
@@ -3930,6 +4090,254 @@
 
   const ROOM_PREFIXES = ['TWA', 'PAA', 'JFK', 'IDL', 'SST', 'CAB', 'JET', 'LAX', 'ORD', 'MIA'];
 
+  // ---------------------------------------------------------------------------
+  // NET: signalling ladder, ICE/TURN configuration and link diagnostics.
+  //
+  // WebRTC needs two separate things to work across the open internet:
+  //   1. A SIGNALLING server (PeerJS cloud by default) to exchange handshakes.
+  //   2. ICE servers — STUN to discover your public address, and a TURN relay
+  //      for the ~10-20% of players behind symmetric NAT / strict firewalls
+  //      where a direct peer-to-peer tunnel simply cannot be opened.
+  //
+  // Both are overridable at runtime so a player can point the game at their own
+  // infrastructure without touching the source:
+  //   ?signal=host:port/path     custom PeerJS signalling server
+  //   ?turn=turn:host:3478|user|pass   custom TURN relay (repeatable, comma-sep)
+  // Overrides persist in localStorage so they survive a reload.
+  // ---------------------------------------------------------------------------
+  const NET = {
+    STORAGE_KEY: 'airSuperiorityNetConfig',
+
+    // Signalling ladder — tried in order whenever a socket fails to open.
+    servers: [
+      { host: '0.peerjs.com', port: 443, path: '/', secure: true, label: 'PEERJS CLOUD' },
+      { host: 'peerjs.92k.de', port: 443, path: '/', secure: true, label: 'MIRROR 92K' }
+    ],
+
+    // STUN only by default: it is free, reliable and resolves ~80-90% of pairs.
+    // The old free public TURN relays (openrelay.metered.ca) are dead — that
+    // host now resolves to the blackhole address 192.0.2.1 — so a relay is
+    // opt-in via a custom TURN entry or a credentials API URL below.
+    baseIce: [
+      { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: 'stun:stun.relay.metered.ca:80' }
+    ],
+
+    customServer: null,
+    customTurn: [],
+    turnApiUrl: '',
+    dynamicIce: [],
+    activeServerIndex: 0,
+    lastDiagnostics: null,
+
+    loadOverrides() {
+      let saved = {};
+      try {
+        saved = JSON.parse(window.localStorage.getItem(this.STORAGE_KEY) || '{}') || {};
+      } catch (_e) {
+        saved = {};
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const signalParam = params.get('signal');
+      const turnParam = params.get('turn');
+
+      const turnApiParam = params.get('turnapi');
+      if (signalParam) saved.signal = signalParam;
+      if (turnParam) saved.turn = turnParam;
+      if (turnApiParam) saved.turnApi = turnApiParam;
+      if (params.get('resetnet') === '1') {
+        saved = {};
+      }
+
+      if (saved.signal) this.customServer = this.parseSignalString(saved.signal);
+      if (saved.turn) this.customTurn = this.parseTurnString(saved.turn);
+      if (saved.turnApi) this.turnApiUrl = String(saved.turnApi);
+
+      if (signalParam || turnParam || turnApiParam || params.get('resetnet') === '1') {
+        try {
+          window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(saved));
+        } catch (_e) {}
+      }
+    },
+
+    // "host:port/path" or "https://host/path"
+    parseSignalString(raw) {
+      try {
+        const clean = String(raw).trim().replace(/^https?:\/\//i, '');
+        const slash = clean.indexOf('/');
+        const authority = slash >= 0 ? clean.slice(0, slash) : clean;
+        const path = slash >= 0 ? clean.slice(slash) : '/';
+        const [host, portStr] = authority.split(':');
+        if (!host) return null;
+        return {
+          host,
+          port: portStr ? parseInt(portStr, 10) : 443,
+          path: path || '/',
+          secure: !portStr || portStr === '443',
+          label: 'CUSTOM TOWER'
+        };
+      } catch (_e) {
+        return null;
+      }
+    },
+
+    // "turn:host:3478|user|pass , turns:host:5349|user|pass"
+    parseTurnString(raw) {
+      return String(raw)
+        .split(',')
+        .map((chunk) => {
+          const [urls, username, credential] = chunk.split('|').map((x) => (x || '').trim());
+          if (!urls) return null;
+          return username ? { urls, username, credential } : { urls };
+        })
+        .filter(Boolean);
+    },
+
+    saveCustom(signalStr, turnStr, turnApiStr) {
+      const payload = {};
+      if (signalStr) payload.signal = signalStr;
+      if (turnStr) payload.turn = turnStr;
+      if (turnApiStr) payload.turnApi = turnApiStr;
+      try {
+        window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(payload));
+      } catch (_e) {}
+      this.customServer = signalStr ? this.parseSignalString(signalStr) : null;
+      this.customTurn = turnStr ? this.parseTurnString(turnStr) : [];
+      this.turnApiUrl = turnApiStr || '';
+      this.dynamicIce = [];
+    },
+
+    // Most TURN providers (Metered, Cloudflare, Twilio, self-hosted coturn with
+    // a tiny endpoint) can hand back a ready-made iceServers array. Fetching it
+    // at connect time keeps short-lived credentials valid.
+    refreshDynamicIce() {
+      if (!this.turnApiUrl) return Promise.resolve([]);
+      return fetch(this.turnApiUrl, { cache: 'no-store' })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          const list = Array.isArray(data) ? data : data && data.iceServers ? data.iceServers : [];
+          this.dynamicIce = list.filter((e) => e && e.urls);
+          return this.dynamicIce;
+        })
+        .catch(() => {
+          this.dynamicIce = [];
+          return [];
+        });
+    },
+
+    serverList() {
+      return this.customServer ? [this.customServer, ...this.servers] : this.servers;
+    },
+
+    iceServers() {
+      return [...this.baseIce, ...this.customTurn, ...this.dynamicIce];
+    },
+
+    hasRelayConfigured() {
+      return this.customTurn.length > 0 || this.dynamicIce.length > 0;
+    },
+
+    serverLabel(index) {
+      const list = this.serverList();
+      const srv = list[index % list.length];
+      return srv ? srv.label : 'UNKNOWN';
+    },
+
+    // PeerJS options for a given rung of the signalling ladder. `secure: true`
+    // with port 443 guarantees a wss:// handshake, so an HTTPS page (GitHub
+    // Pages) never trips the browser's mixed-content blocker.
+    peerOptions(index) {
+      const list = this.serverList();
+      const srv = list[index % list.length];
+      return {
+        host: srv.host,
+        port: srv.port,
+        path: srv.path,
+        secure: srv.secure,
+        debug: 0,
+        config: {
+          iceServers: this.iceServers(),
+          iceCandidatePoolSize: 4,
+          sdpSemantics: 'unified-plan'
+        }
+      };
+    },
+
+    // Gathers ICE candidates with the live configuration so a player can see
+    // exactly which leg of the connection is failing before blaming the game.
+    runDiagnostics(onUpdate) {
+      const report = {
+        peerScript: typeof window.Peer === 'function',
+        secureContext: window.isSecureContext !== false,
+        webrtc: typeof window.RTCPeerConnection === 'function',
+        host: false,
+        srflx: false,
+        relay: false,
+        signalling: null,
+        done: false
+      };
+      const push = () => onUpdate && onUpdate({ ...report });
+      push();
+
+      if (!report.webrtc) {
+        report.done = true;
+        push();
+        return Promise.resolve(report);
+      }
+
+      return new Promise((resolve) => {
+        let pc = null;
+        try {
+          pc = new RTCPeerConnection({ iceServers: this.iceServers(), iceCandidatePoolSize: 2 });
+        } catch (_e) {
+          report.done = true;
+          push();
+          resolve(report);
+          return;
+        }
+
+        const finish = () => {
+          if (report.done) return;
+          report.done = true;
+          try {
+            pc.close();
+          } catch (_e) {}
+          this.lastDiagnostics = report;
+          push();
+          resolve(report);
+        };
+
+        pc.onicecandidate = (evt) => {
+          if (!evt.candidate) {
+            finish();
+            return;
+          }
+          const type = evt.candidate.type || '';
+          if (type === 'host') report.host = true;
+          if (type === 'srflx') report.srflx = true;
+          if (type === 'relay') report.relay = true;
+          push();
+        };
+
+        try {
+          pc.createDataChannel('probe');
+          pc.createOffer()
+            .then((offer) => pc.setLocalDescription(offer))
+            .catch(() => finish());
+        } catch (_e) {
+          finish();
+        }
+
+        // ICE gathering can hang behind aggressive firewalls — cap the probe.
+        window.setTimeout(finish, 9000);
+      });
+    }
+  };
+
+  NET.loadOverrides();
+
   function generateMemorableRoomCode() {
     const prefix = ROOM_PREFIXES[Math.floor(Math.random() * ROOM_PREFIXES.length)];
     const num = Math.floor(100 + Math.random() * 900);
@@ -3951,6 +4359,33 @@
     return `air-sup-p2p-${norm}`;
   }
 
+  function buildInviteLink(code) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', normalizeRoomCode(code));
+    url.hash = '';
+    return url.toString();
+  }
+
+  // Human-readable explanation for every PeerJS error type.
+  function describePeerError(err) {
+    const type = (err && err.type) || 'unknown';
+    const map = {
+      'browser-incompatible': 'This browser cannot run WebRTC. Try Chrome, Edge, Safari or Firefox.',
+      'disconnected': 'Lost the signalling socket. Reconnecting…',
+      'invalid-id': 'That room code contains characters the tower cannot route.',
+      'invalid-key': 'The signalling server rejected this build’s API key.',
+      'network': 'Could not reach the signalling tower (network blocked or offline).',
+      'peer-unavailable': 'No Control Tower is broadcasting on that room code right now.',
+      'ssl-unavailable': 'The signalling server refused a secure (wss://) handshake.',
+      'server-error': 'The signalling tower returned an error. Trying a backup tower…',
+      'socket-error': 'The signalling socket dropped. Trying a backup tower…',
+      'socket-closed': 'The signalling socket closed unexpectedly. Reconnecting…',
+      'unavailable-id': 'That room code is still held by a previous session.',
+      'webrtc': 'WebRTC could not open a data channel — a TURN relay is likely required.'
+    };
+    return map[type] || `Unexpected link failure (${type}).`;
+  }
+
   const p2p = {
     peer: null,
     role: null, // 'host' | 'guest'
@@ -3960,6 +4395,16 @@
     localPeerId: 'HOST',
     joinStatus: 'idle', // 'idle' | 'connecting' | 'approved' | 'error' | 'full'
     hostOnline: false,
+    statusDetail: '',
+    serverIndex: 0,
+    openTimer: null,
+    joinTimer: null,
+    retryTimer: null,
+    keepAliveTimer: null,
+    reconnectAttempts: 0,
+    idAttempts: 0,
+    joinAttempts: 0,
+    lastPongAt: 0,
 
     getLocalProfile() {
       const slot = state.config.coopPlayers[0];
@@ -3971,7 +4416,24 @@
       };
     },
 
+    setDetail(text) {
+      this.statusDetail = text || '';
+      renderOnlineLobbyUI();
+    },
+
+    clearTimers() {
+      [this.openTimer, this.joinTimer, this.retryTimer, this.keepAliveTimer].forEach((id) => {
+        if (id) window.clearTimeout(id);
+      });
+      if (this.keepAliveTimer) window.clearInterval(this.keepAliveTimer);
+      this.openTimer = null;
+      this.joinTimer = null;
+      this.retryTimer = null;
+      this.keepAliveTimer = null;
+    },
+
     shutdown() {
+      this.clearTimers();
       this.guestConns.forEach((conn) => {
         try {
           conn.close();
@@ -3993,8 +4455,38 @@
       this.role = null;
       this.hostOnline = false;
       this.joinStatus = 'idle';
+      this.reconnectAttempts = 0;
+      this.idAttempts = 0;
+      this.joinAttempts = 0;
     },
 
+    // Data channels can look "open" long after the far end has gone away, so
+    // both sides exchange a heartbeat and flag silence in the lobby UI.
+    startKeepAlive() {
+      if (this.keepAliveTimer) window.clearInterval(this.keepAliveTimer);
+      this.lastPongAt = Date.now();
+      this.keepAliveTimer = window.setInterval(() => {
+        const now = Date.now();
+        if (this.role === 'host') {
+          this.guestConns.forEach((conn) => {
+            if (conn.open) {
+              try {
+                conn.send({ type: 'PING', t: now });
+              } catch (_e) {}
+            }
+          });
+        } else if (this.role === 'guest' && this.hostConn && this.hostConn.open) {
+          try {
+            this.hostConn.send({ type: 'PING', t: now });
+          } catch (_e) {}
+          if (now - this.lastPongAt > 22000) {
+            this.setDetail(t('online.detailSilence'));
+          }
+        }
+      }, 5000);
+    },
+
+    // ---- HOST ---------------------------------------------------------------
     initHostRoom(forceNewCode = false) {
       if (forceNewCode || !state.config.roomCode) {
         state.config.roomCode = generateMemorableRoomCode();
@@ -4002,6 +4494,8 @@
       this.shutdown();
       this.role = 'host';
       this.localPeerId = 'HOST';
+      this.serverIndex = 0;
+      this.idAttempts = 0;
       const prof = this.getLocalProfile();
       this.lobbyRoster = [
         {
@@ -4017,42 +4511,152 @@
 
       if (typeof window.Peer !== 'function') {
         this.hostOnline = false;
-        renderOnlineLobbyUI();
+        this.setDetail(t('online.detailNoLib'));
         return;
       }
 
+      if (NET.turnApiUrl && NET.dynamicIce.length === 0) {
+        this.setDetail(t('online.detailFetchRelay'));
+        NET.refreshDynamicIce().then(() => this.openHostPeer());
+      } else {
+        this.openHostPeer();
+      }
+    },
+
+    openHostPeer() {
       const targetPeerId = roomCodeToPeerId(state.config.roomCode);
+      this.setDetail(
+        t('online.detailOpening', { server: NET.serverLabel(this.serverIndex) })
+      );
+
+      let peer;
       try {
-        const peer = new window.Peer(targetPeerId);
-        this.peer = peer;
-
-        peer.on('open', () => {
-          this.hostOnline = true;
-          renderOnlineLobbyUI();
-        });
-
-        peer.on('error', (err) => {
-          if (err && err.type === 'unavailable-id') {
-            state.config.roomCode = generateMemorableRoomCode();
-            this.initHostRoom(false);
-            return;
-          }
-          this.hostOnline = false;
-          renderOnlineLobbyUI();
-        });
-
-        peer.on('connection', (conn) => {
-          this.setupIncomingGuestConnection(conn);
-        });
+        peer = new window.Peer(targetPeerId, NET.peerOptions(this.serverIndex));
       } catch (_err) {
         this.hostOnline = false;
+        this.setDetail(describePeerError({ type: 'network' }));
+        return;
+      }
+      this.peer = peer;
+
+      // If the socket never opens, drop down to the next tower automatically.
+      if (this.openTimer) window.clearTimeout(this.openTimer);
+      this.openTimer = window.setTimeout(() => {
+        if (this.peer === peer && !this.hostOnline) {
+          this.advanceHostServer(t('online.detailTimeout'));
+        }
+      }, 12000);
+
+      peer.on('open', () => {
+        if (this.peer !== peer) return;
+        window.clearTimeout(this.openTimer);
+        this.hostOnline = true;
+        this.reconnectAttempts = 0;
+        this.idAttempts = 0;
+        this.setDetail(
+          t('online.detailLive', {
+            server: NET.serverLabel(this.serverIndex),
+            code: state.config.roomCode
+          })
+        );
+        this.startKeepAlive();
+      });
+
+      peer.on('connection', (conn) => {
+        this.setupIncomingGuestConnection(conn);
+      });
+
+      // PeerJS parks the signalling socket when idle; without this nobody can
+      // join a lobby that has been sitting open for a couple of minutes.
+      peer.on('disconnected', () => {
+        if (this.peer !== peer || peer.destroyed) return;
+        this.hostOnline = false;
+        this.setDetail(t('online.detailReconnecting'));
+        if (this.reconnectAttempts < 6) {
+          this.reconnectAttempts++;
+          window.setTimeout(() => {
+            try {
+              if (!peer.destroyed) peer.reconnect();
+            } catch (_e) {}
+          }, 900 * this.reconnectAttempts);
+        } else {
+          this.advanceHostServer(t('online.detailDropped'));
+        }
+      });
+
+      peer.on('close', () => {
+        if (this.peer !== peer) return;
+        this.hostOnline = false;
         renderOnlineLobbyUI();
+      });
+
+      peer.on('error', (err) => {
+        if (this.peer !== peer) return;
+        const type = (err && err.type) || 'unknown';
+
+        if (type === 'unavailable-id') {
+          // A stale registration from a previous session usually expires in a
+          // few seconds, so retry the SAME code before changing it on the host.
+          this.idAttempts++;
+          if (this.idAttempts <= 3) {
+            this.setDetail(t('online.detailIdBusy', { n: this.idAttempts }));
+            try {
+              peer.destroy();
+            } catch (_e) {}
+            this.retryTimer = window.setTimeout(() => this.openHostPeer(), 1800);
+          } else {
+            state.config.roomCode = generateMemorableRoomCode();
+            this.idAttempts = 0;
+            this.setDetail(t('online.detailNewCode', { code: state.config.roomCode }));
+            try {
+              peer.destroy();
+            } catch (_e) {}
+            this.retryTimer = window.setTimeout(() => this.openHostPeer(), 600);
+          }
+          return;
+        }
+
+        if (['network', 'server-error', 'socket-error', 'socket-closed', 'ssl-unavailable'].includes(type)) {
+          this.advanceHostServer(describePeerError(err));
+          return;
+        }
+
+        this.hostOnline = false;
+        this.setDetail(describePeerError(err));
+      });
+    },
+
+    advanceHostServer(reason) {
+      const list = NET.serverList();
+      try {
+        if (this.peer) this.peer.destroy();
+      } catch (_e) {}
+      this.hostOnline = false;
+
+      if (this.serverIndex + 1 < list.length) {
+        this.serverIndex++;
+        this.setDetail(`${reason} ${t('online.detailFallback', { server: NET.serverLabel(this.serverIndex) })}`);
+        this.retryTimer = window.setTimeout(() => this.openHostPeer(), 700);
+      } else {
+        this.serverIndex = 0;
+        this.setDetail(`${reason} ${t('online.detailAllDown')}`);
       }
     },
 
     setupIncomingGuestConnection(conn) {
       conn.on('data', (data) => {
         if (!data || typeof data !== 'object') return;
+
+        if (data.type === 'PING') {
+          try {
+            conn.send({ type: 'PONG', t: data.t });
+          } catch (_e) {}
+          return;
+        }
+        if (data.type === 'PONG') {
+          this.lastPongAt = Date.now();
+          return;
+        }
 
         if (data.type === 'JOIN_REQUEST') {
           const requiredPass = dom.onlineHostPassword ? dom.onlineHostPassword.value.trim() : '';
@@ -4067,7 +4671,10 @@
             return;
           }
           if (this.lobbyRoster.length >= 4 || state.status !== 'MENU') {
-            conn.send({ type: 'JOIN_REJECTED', reason: 'ROOM_FULL' });
+            conn.send({
+              type: 'JOIN_REJECTED',
+              reason: state.status !== 'MENU' ? 'IN_PROGRESS' : 'ROOM_FULL'
+            });
             window.setTimeout(() => {
               try {
                 conn.close();
@@ -4078,21 +4685,41 @@
 
           this.guestConns.set(conn.peer, conn);
           const prof = data.profile || {};
-          const usedColors = new Set(this.lobbyRoster.map((r) => r.color.toUpperCase()));
+          const others = this.lobbyRoster.filter((r) => r.peerId !== conn.peer);
+          const usedColors = new Set(others.map((r) => String(r.color).toUpperCase()));
           let assignedColor = String(prof.color || '#1E4DB7');
+          let assignedColorName = prof.colorName || liveryNameFor(assignedColor);
           if (usedColors.has(assignedColor.toUpperCase())) {
             const alt = AI_COLOR_PALETTE.find((c) => !usedColors.has(c.toUpperCase()));
-            if (alt) assignedColor = alt;
+            if (alt) {
+              assignedColor = alt;
+              assignedColorName = liveryNameFor(alt, alt);
+            }
+          }
+
+          // Two captains flying under the same callsign makes the board and the
+          // dispatch log unreadable, so duplicates get a numbered suffix.
+          let assignedName = String(prof.name || `CAPTAIN 0${this.lobbyRoster.length + 1}`)
+            .toUpperCase()
+            .slice(0, 22);
+          const usedNames = new Set(others.map((r) => r.name));
+          if (usedNames.has(assignedName)) {
+            const suffixes = ['II', 'III', 'IV'];
+            for (const sfx of suffixes) {
+              const candidate = `${assignedName.slice(0, 19)} ${sfx}`;
+              if (!usedNames.has(candidate)) {
+                assignedName = candidate;
+                break;
+              }
+            }
           }
 
           const existingIdx = this.lobbyRoster.findIndex((r) => r.peerId === conn.peer);
           const entry = {
             peerId: conn.peer,
-            name: String(prof.name || `CAPTAIN 0${this.lobbyRoster.length + 1}`)
-              .toUpperCase()
-              .slice(0, 22),
+            name: assignedName,
             color: assignedColor,
-            colorName: prof.colorName || assignedColor,
+            colorName: assignedColorName,
             logo: prof.logo || 'globe',
             isHost: false
           };
@@ -4110,6 +4737,7 @@
             maxRounds: state.config.maxRounds
           });
           this.broadcastLobbyRoster();
+          this.setDetail(t('online.detailGuestJoined', { name: entry.name }));
           renderOnlineLobbyUI();
           syncSetupFormUI();
           return;
@@ -4196,109 +4824,248 @@
       }
     },
 
+    // ---- GUEST --------------------------------------------------------------
     connectToHostRoom(rawCode, rawPass) {
       const cleanCode = normalizeRoomCode(rawCode);
       if (!cleanCode || cleanCode.length < 4) {
         this.joinStatus = 'error';
-        renderOnlineLobbyUI();
+        this.setDetail(t('online.detailBadCode'));
         return;
       }
       if (typeof window.Peer !== 'function') {
         this.joinStatus = 'error';
-        renderOnlineLobbyUI();
+        this.setDetail(t('online.detailNoLib'));
         return;
       }
 
       this.shutdown();
       this.role = 'guest';
       this.joinStatus = 'connecting';
+      this.serverIndex = 0;
+      this.joinAttempts = 0;
+      this.pendingCode = cleanCode;
+      this.pendingPass = String(rawPass || '').trim();
       renderOnlineLobbyUI();
       syncSetupFormUI();
 
-      const hostPeerId = roomCodeToPeerId(cleanCode);
+      if (NET.turnApiUrl && NET.dynamicIce.length === 0) {
+        this.setDetail(t('online.detailFetchRelay'));
+        NET.refreshDynamicIce().then(() => this.openGuestPeer());
+      } else {
+        this.openGuestPeer();
+      }
+    },
+
+    openGuestPeer() {
+      const hostPeerId = roomCodeToPeerId(this.pendingCode);
+      this.setDetail(t('online.detailOpening', { server: NET.serverLabel(this.serverIndex) }));
+
+      let peer;
       try {
-        const peer = new window.Peer();
-        this.peer = peer;
-        let settled = false;
-        const timeoutId = window.setTimeout(() => {
-          if (!settled) {
-            settled = true;
+        peer = new window.Peer(undefined, NET.peerOptions(this.serverIndex));
+      } catch (_e) {
+        this.joinStatus = 'error';
+        this.setDetail(describePeerError({ type: 'network' }));
+        return;
+      }
+      this.peer = peer;
+
+      if (this.openTimer) window.clearTimeout(this.openTimer);
+      this.openTimer = window.setTimeout(() => {
+        if (this.peer === peer && this.joinStatus === 'connecting' && !this.hostConn) {
+          this.advanceGuestServer(t('online.detailTimeout'));
+        }
+      }, 12000);
+
+      peer.on('open', (myId) => {
+        if (this.peer !== peer) return;
+        window.clearTimeout(this.openTimer);
+        this.localPeerId = myId;
+        this.setDetail(t('online.detailDialing', { code: this.pendingCode }));
+        this.dialHost(peer, hostPeerId);
+      });
+
+      peer.on('disconnected', () => {
+        if (this.peer !== peer || peer.destroyed) return;
+        try {
+          peer.reconnect();
+        } catch (_e) {}
+      });
+
+      peer.on('error', (err) => {
+        if (this.peer !== peer) return;
+        const type = (err && err.type) || 'unknown';
+
+        if (type === 'peer-unavailable') {
+          // The host may be mid-reconnect — retry a few times before failing.
+          this.joinAttempts++;
+          if (this.joinAttempts <= 3) {
+            this.setDetail(t('online.detailRetryHost', { n: this.joinAttempts }));
+            this.retryTimer = window.setTimeout(() => this.dialHost(peer, roomCodeToPeerId(this.pendingCode)), 2500);
+          } else {
             this.joinStatus = 'error';
-            renderOnlineLobbyUI();
+            this.setDetail(describePeerError(err));
+            sfx.playError();
           }
-        }, 7500);
+          renderOnlineLobbyUI();
+          return;
+        }
 
-        peer.on('open', (myId) => {
-          this.localPeerId = myId;
-          const conn = peer.connect(hostPeerId, { reliable: true });
-          this.hostConn = conn;
+        if (['network', 'server-error', 'socket-error', 'socket-closed', 'ssl-unavailable'].includes(type)) {
+          this.advanceGuestServer(describePeerError(err));
+          return;
+        }
 
-          conn.on('open', () => {
-            conn.send({
-              type: 'JOIN_REQUEST',
-              password: String(rawPass || '').trim(),
-              profile: this.getLocalProfile()
-            });
-          });
+        this.joinStatus = 'error';
+        this.setDetail(describePeerError(err));
+        renderOnlineLobbyUI();
+        syncSetupFormUI();
+        sfx.playError();
+      });
+    },
 
-          conn.on('data', (data) => {
-            if (!data || typeof data !== 'object') return;
-            if (data.type === 'JOIN_REJECTED') {
-              settled = true;
-              clearTimeout(timeoutId);
-              this.joinStatus = data.reason === 'ROOM_FULL' ? 'full' : 'error';
-              renderOnlineLobbyUI();
-              syncSetupFormUI();
-              sfx.playError();
-              return;
-            }
-            if (data.type === 'JOIN_ACCEPTED') {
-              settled = true;
-              clearTimeout(timeoutId);
-              this.joinStatus = 'approved';
-              this.localPeerId = data.assignedPeerId || myId;
-              this.lobbyRoster = data.roster || [];
-              if (data.maxRounds) state.config.maxRounds = data.maxRounds;
-              sfx.playPAChime();
-              renderOnlineLobbyUI();
-              syncSetupFormUI();
-              return;
-            }
-            if (data.type === 'LOBBY_UPDATE') {
-              this.lobbyRoster = data.roster || [];
-              if (data.maxRounds) state.config.maxRounds = data.maxRounds;
-              renderOnlineLobbyUI();
-              syncSetupFormUI();
-              return;
-            }
-            if (data.type === 'GAME_START' || data.type === 'STATE_SYNC') {
-              applyAuthoritativeStateFromHost(data);
-            }
-          });
+    advanceGuestServer(reason) {
+      const list = NET.serverList();
+      try {
+        if (this.peer) this.peer.destroy();
+      } catch (_e) {}
+      this.hostConn = null;
 
-          conn.on('close', () => {
-            if (state.status === 'MENU') {
-              this.joinStatus = 'error';
-              renderOnlineLobbyUI();
-              syncSetupFormUI();
-            } else {
-              showToast('CONTROL TOWER DISCONNECTED', 'Connection to the Host Captain was lost.');
-            }
-          });
+      if (this.serverIndex + 1 < list.length) {
+        this.serverIndex++;
+        this.setDetail(`${reason} ${t('online.detailFallback', { server: NET.serverLabel(this.serverIndex) })}`);
+        this.retryTimer = window.setTimeout(() => this.openGuestPeer(), 700);
+      } else {
+        this.serverIndex = 0;
+        this.joinStatus = 'error';
+        this.setDetail(`${reason} ${t('online.detailAllDown')}`);
+        renderOnlineLobbyUI();
+        syncSetupFormUI();
+      }
+    },
+
+    dialHost(peer, hostPeerId) {
+      if (!peer || peer.destroyed) return;
+      let conn;
+      try {
+        conn = peer.connect(hostPeerId, { reliable: true, serialization: 'json' });
+      } catch (_e) {
+        this.joinStatus = 'error';
+        this.setDetail(describePeerError({ type: 'webrtc' }));
+        return;
+      }
+      this.hostConn = conn;
+
+      // The data channel itself can stall even when signalling succeeded —
+      // that is the classic symmetric-NAT case where TURN is required.
+      if (this.joinTimer) window.clearTimeout(this.joinTimer);
+      this.joinTimer = window.setTimeout(() => {
+        if (this.joinStatus === 'connecting' && (!conn || !conn.open)) {
+          this.joinAttempts++;
+          if (this.joinAttempts <= 2) {
+            this.setDetail(t('online.detailRetryChannel', { n: this.joinAttempts }));
+            try {
+              conn.close();
+            } catch (_e) {}
+            this.dialHost(peer, hostPeerId);
+          } else {
+            this.joinStatus = 'error';
+            this.setDetail(t('online.detailRelayNeeded'));
+            renderOnlineLobbyUI();
+            syncSetupFormUI();
+            sfx.playError();
+          }
+        }
+      }, 15000);
+
+      conn.on('open', () => {
+        window.clearTimeout(this.joinTimer);
+        this.startKeepAlive();
+        this.setDetail(t('online.detailChannelOpen'));
+        conn.send({
+          type: 'JOIN_REQUEST',
+          password: this.pendingPass,
+          profile: this.getLocalProfile()
         });
+      });
 
-        peer.on('error', () => {
-          settled = true;
-          clearTimeout(timeoutId);
-          this.joinStatus = 'error';
+      conn.on('data', (data) => {
+        if (!data || typeof data !== 'object') return;
+
+        if (data.type === 'PING') {
+          try {
+            conn.send({ type: 'PONG', t: data.t });
+          } catch (_e) {}
+          this.lastPongAt = Date.now();
+          return;
+        }
+        if (data.type === 'PONG') {
+          this.lastPongAt = Date.now();
+          return;
+        }
+
+        if (data.type === 'JOIN_REJECTED') {
+          window.clearTimeout(this.joinTimer);
+          if (data.reason === 'ROOM_FULL') {
+            this.joinStatus = 'full';
+            this.setDetail(t('online.detailRoomFull'));
+          } else if (data.reason === 'IN_PROGRESS') {
+            this.joinStatus = 'error';
+            this.setDetail(t('online.detailInProgress'));
+          } else {
+            this.joinStatus = 'error';
+            this.setDetail(t('online.detailBadPass'));
+          }
           renderOnlineLobbyUI();
           syncSetupFormUI();
           sfx.playError();
-        });
-      } catch (_e) {
-        this.joinStatus = 'error';
-        renderOnlineLobbyUI();
-      }
+          return;
+        }
+
+        if (data.type === 'JOIN_ACCEPTED') {
+          window.clearTimeout(this.joinTimer);
+          this.joinStatus = 'approved';
+          this.localPeerId = data.assignedPeerId || this.localPeerId;
+          this.lobbyRoster = data.roster || [];
+          if (data.maxRounds) state.config.maxRounds = data.maxRounds;
+          sfx.playPAChime();
+          this.setDetail(t('online.detailApproved'));
+          renderOnlineLobbyUI();
+          syncSetupFormUI();
+          return;
+        }
+
+        if (data.type === 'LOBBY_UPDATE') {
+          this.lobbyRoster = data.roster || [];
+          if (data.maxRounds) state.config.maxRounds = data.maxRounds;
+          renderOnlineLobbyUI();
+          syncSetupFormUI();
+          return;
+        }
+
+        if (data.type === 'GAME_START' || data.type === 'STATE_SYNC') {
+          applyAuthoritativeStateFromHost(data);
+        }
+      });
+
+      conn.on('error', () => {
+        if (this.joinStatus === 'connecting') {
+          this.setDetail(t('online.detailChannelError'));
+        }
+      });
+
+      conn.on('close', () => {
+        if (state.status === 'MENU') {
+          if (this.joinStatus === 'approved') {
+            this.joinStatus = 'error';
+            this.setDetail(t('online.detailHostClosed'));
+          }
+          renderOnlineLobbyUI();
+          syncSetupFormUI();
+        } else {
+          showToast('CONTROL TOWER DISCONNECTED', 'Connection to the Host Captain was lost.');
+        }
+      });
     },
 
     serializeAuthoritativeState(extra = {}) {
@@ -4504,6 +5271,45 @@
     }
   }
 
+  // Paints the result of NET.runDiagnostics() into the lobby's diagnostics list.
+  function renderDiagnostics(report) {
+    if (!dom.onlineDiagList) return;
+    const marks = {
+      peerScript: report.peerScript,
+      webrtc: report.webrtc,
+      host: report.host,
+      srflx: report.srflx,
+      relay: report.relay
+    };
+
+    dom.onlineDiagList.querySelectorAll('li').forEach((li) => {
+      const key = li.dataset.check;
+      const ok = !!marks[key];
+      const pending = !report.done && !ok;
+      li.classList.toggle('ok', ok);
+      li.classList.toggle('bad', report.done && !ok);
+      li.classList.toggle('pending', pending);
+      const val = li.querySelector('.diag-value');
+      if (val) val.textContent = ok ? 'OK' : pending ? '…' : 'NO';
+    });
+
+    if (dom.onlineDiagSummary) {
+      if (!report.done) {
+        dom.onlineDiagSummary.textContent = t('online.testRunning');
+      } else if (!report.peerScript) {
+        dom.onlineDiagSummary.textContent = t('online.detailNoLib');
+      } else if (!report.webrtc) {
+        dom.onlineDiagSummary.textContent = describePeerError({ type: 'browser-incompatible' });
+      } else if (!report.srflx) {
+        dom.onlineDiagSummary.textContent = t('online.diagNoStun');
+      } else if (!report.relay) {
+        dom.onlineDiagSummary.textContent = t('online.diagRelayHint');
+      } else {
+        dom.onlineDiagSummary.textContent = t('online.diagAllGood');
+      }
+    }
+  }
+
   function renderOnlineLobbyUI() {
     if (!dom.onlineSetupControls) return;
     const isHostRole = state.config.onlineRole !== 'join';
@@ -4519,6 +5325,15 @@
 
     if (dom.onlineRoomCodeDisplay) {
       dom.onlineRoomCodeDisplay.textContent = state.config.roomCode || 'TWA-404';
+    }
+    if (dom.onlineInviteLink) {
+      dom.onlineInviteLink.value = buildInviteLink(state.config.roomCode || 'TWA-404');
+    }
+    if (dom.onlineHostDetail) {
+      dom.onlineHostDetail.textContent = isHostRole ? p2p.statusDetail : '';
+    }
+    if (dom.onlineJoinDetail) {
+      dom.onlineJoinDetail.textContent = isHostRole ? '' : p2p.statusDetail;
     }
 
     const buildRosterHtml = (roster) => {
@@ -4854,6 +5669,58 @@
         p2p.initHostRoom(true);
         syncSetupFormUI();
         sfx.playPinClaim();
+      });
+    }
+
+    // One-click invite link
+    if (dom.onlineCopyLinkBtn) {
+      dom.onlineCopyLinkBtn.addEventListener('click', () => {
+        const link = buildInviteLink(state.config.roomCode || 'TWA-404');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(link).catch(() => {});
+        } else if (dom.onlineInviteLink) {
+          dom.onlineInviteLink.select();
+          try {
+            document.execCommand('copy');
+          } catch (_e) {}
+        }
+        dom.onlineCopyLinkBtn.textContent = t('online.copiedBtn');
+        window.setTimeout(() => {
+          if (dom.onlineCopyLinkBtn) dom.onlineCopyLinkBtn.textContent = t('online.copyLinkBtn');
+        }, 1400);
+        sfx.playUiClick();
+      });
+    }
+
+    // Link diagnostics
+    if (dom.onlineTestLinkBtn) {
+      dom.onlineTestLinkBtn.addEventListener('click', () => {
+        sfx.playUiClick();
+        dom.onlineTestLinkBtn.disabled = true;
+        dom.onlineTestLinkBtn.textContent = t('online.testRunning');
+        NET.runDiagnostics((report) => renderDiagnostics(report)).then((report) => {
+          renderDiagnostics(report);
+          dom.onlineTestLinkBtn.disabled = false;
+          dom.onlineTestLinkBtn.textContent = t('online.testLinkBtn');
+        });
+      });
+    }
+
+    if (dom.onlineSaveNetBtn) {
+      dom.onlineSaveNetBtn.addEventListener('click', () => {
+        const signalStr = dom.onlineCustomSignal ? dom.onlineCustomSignal.value.trim() : '';
+        const turnStr = dom.onlineCustomTurn ? dom.onlineCustomTurn.value.trim() : '';
+        const turnApiStr = dom.onlineTurnApi ? dom.onlineTurnApi.value.trim() : '';
+        NET.saveCustom(signalStr, turnStr, turnApiStr);
+        sfx.playPinClaim();
+        // Re-establish the link with the new configuration
+        if (state.config.onlineRole === 'join') {
+          p2p.shutdown();
+          p2p.setDetail('Network settings saved. Request boarding clearance again.');
+          renderOnlineLobbyUI();
+        } else {
+          p2p.initHostRoom(false);
+        }
       });
     }
 
@@ -7568,6 +8435,15 @@
 
     ctx.save();
 
+    // On small boards every pin is drawn larger in world units (scaled about
+    // its own ground anchor) so heads, labels and badges stay legible without
+    // changing a single hand-tuned offset below.
+    if (view.uiScale !== 1) {
+      ctx.translate(gate.x, gate.y);
+      ctx.scale(view.uiScale, view.uiScale);
+      ctx.translate(-gate.x, -gate.y);
+    }
+
     // 1. Ground Architectural Anchor Ring at (gate.x, gate.y)
     //    A cream halo lifts every pin off the clean terminal floor.
     ctx.beginPath();
@@ -7825,9 +8701,13 @@
     const brandPrimary = (state.theme && state.theme.primary) || '#D1192A';
     const brandGlow = (state.theme && state.theme.glow) || 'rgba(209, 25, 42, 0.24)';
 
-    // Clear with Clean Retro Minimalist Off-White/Cream Architectural Paper
+    // Clear the full backing store (device pixels) with architectural paper
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#FDFBF7';
-    ctx.fillRect(0, 0, VIRTUAL_W, VIRTUAL_H);
+    ctx.fillRect(0, 0, dom.boardCanvas.width, dom.boardCanvas.height);
+
+    // Map the 1100x620 world onto this device's canvas box, then pan & zoom
+    applyViewTransform(ctx);
 
     ctx.save();
     // Apply Interactive Pan & Zoom Camera Transform
@@ -8328,10 +9208,70 @@
     syncAudioButtons();
   }
 
+  // Restore any saved custom tower / relay into the diagnostics fields
+  if (dom.onlineCustomSignal && NET.customServer) {
+    const cs = NET.customServer;
+    dom.onlineCustomSignal.value = `${cs.host}:${cs.port}${cs.path}`;
+  }
+  if (dom.onlineTurnApi && NET.turnApiUrl) {
+    dom.onlineTurnApi.value = NET.turnApiUrl;
+  }
+  if (dom.onlineCustomTurn && NET.customTurn.length > 0) {
+    dom.onlineCustomTurn.value = NET.customTurn
+      .map((e) => [e.urls, e.username, e.credential].filter(Boolean).join('|'))
+      .join(', ');
+  }
+
+  // ONE-CLICK INVITE: ?room=TWA-404 drops the player straight into the join
+  // panel with the code filled in, so a shared link is all a friend needs.
+  (function applyRoomDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    if (!room) return;
+    const code = normalizeRoomCode(room);
+    if (!code) return;
+    state.config.mode = 'online';
+    state.config.onlineRole = 'join';
+    if (dom.onlineJoinCode) dom.onlineJoinCode.value = code;
+    window.setTimeout(() => {
+      syncSetupFormUI();
+      renderOnlineLobbyUI();
+    }, 0);
+  })();
+
+  // Every session starts on its own room code — a shared default would make
+  // two hosts collide on the signalling server the moment both opened a lobby.
+  state.config.roomCode = generateMemorableRoomCode();
+
   initSetupMenu();
   initTitleSequence();
   initCameraInteractions();
   initI18nAndMobileControls();
+
+  // Keep the backing store matched to the element box: rotating a phone or
+  // opening the keyboard changes it, and a stale size shows as a blurry,
+  // stretched blueprint.
+  resizeBoardCanvas();
+
+  let resizeRaf = null;
+  const scheduleBoardResize = () => {
+    if (resizeRaf) window.cancelAnimationFrame(resizeRaf);
+    resizeRaf = window.requestAnimationFrame(() => {
+      resizeRaf = null;
+      const prevZoom = state.camera.zoom;
+      resizeBoardCanvas();
+      state.camera.zoom = Math.max(prevZoom, coverZoom());
+      clampCameraToWorld();
+      updateZoomButtonLabel();
+    });
+  };
+
+  window.addEventListener('resize', scheduleBoardResize);
+  window.addEventListener('orientationchange', () => window.setTimeout(scheduleBoardResize, 250));
+  if (typeof ResizeObserver === 'function' && dom.canvasWrapper) {
+    new ResizeObserver(scheduleBoardResize).observe(dom.canvasWrapper);
+  }
+
   generateProceduralTerminal();
   requestAnimationFrame(renderBoardCanvas);
 })();

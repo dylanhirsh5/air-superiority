@@ -290,10 +290,19 @@
                   </div>
                 </div>
 
+                <div class="online-invite-row">
+                  <label data-i18n="online.inviteLinkLabel">ONE-CLICK INVITE LINK</label>
+                  <div class="invite-link-plaque">
+                    <input type="text" id="online-invite-link" class="invite-link-input" readonly value="" />
+                    <button type="button" id="online-copy-link-btn" class="btn-code-util" data-i18n="online.copyLinkBtn">COPY LINK</button>
+                  </div>
+                </div>
+
                 <div id="online-host-status-bar" class="online-status-banner status-waiting">
                   <span class="status-led"></span>
                   <span id="online-host-status-text" data-i18n="online.hostListening">Control Tower broadcasting — awaiting captains at the gate...</span>
                 </div>
+                <p id="online-host-detail" class="online-status-detail"></p>
 
                 <div class="online-roster-section">
                   <div class="label-row">
@@ -344,6 +353,7 @@
                   <span class="status-led"></span>
                   <span id="online-join-status-text" data-i18n="online.joinIdleStatus">Enter a Room Code from your Host Captain and request clearance.</span>
                 </div>
+                <p id="online-join-detail" class="online-status-detail"></p>
 
                 <div class="online-roster-section">
                   <div class="label-row">
@@ -355,6 +365,60 @@
                   </div>
                 </div>
               </div>
+
+              <!-- LINK DIAGNOSTICS & CUSTOM RELAY CONFIGURATION -->
+              <details id="online-diagnostics" class="online-diagnostics">
+                <summary>
+                  <span class="diag-summary-title">LINK DIAGNOSTICS &amp; RELAY SETUP</span>
+                  <span class="diag-summary-hint">Run this first if a captain cannot connect</span>
+                </summary>
+
+                <div class="diag-body">
+                  <button type="button" id="online-test-link-btn" class="btn-secondary diag-test-btn" data-i18n="online.testLinkBtn">
+                    TEST MY CONNECTION
+                  </button>
+
+                  <ul id="online-diag-list" class="diag-list">
+                    <li data-check="peerScript"><span class="diag-dot"></span><span class="diag-label">PeerJS library</span><span class="diag-value">—</span></li>
+                    <li data-check="webrtc"><span class="diag-dot"></span><span class="diag-label">WebRTC support</span><span class="diag-value">—</span></li>
+                    <li data-check="host"><span class="diag-dot"></span><span class="diag-label">Local candidates</span><span class="diag-value">—</span></li>
+                    <li data-check="srflx"><span class="diag-dot"></span><span class="diag-label">Public address (STUN)</span><span class="diag-value">—</span></li>
+                    <li data-check="relay"><span class="diag-dot"></span><span class="diag-label">Relay available (TURN)</span><span class="diag-value">—</span></li>
+                  </ul>
+
+                  <p id="online-diag-summary" class="diag-summary-text">
+                    Run the test to confirm this device can open a peer-to-peer tunnel.
+                  </p>
+
+                  <div class="diag-field">
+                    <label for="online-custom-signal">CUSTOM SIGNALLING TOWER (OPTIONAL)</label>
+                    <input type="text" id="online-custom-signal" class="gate-pass-input" placeholder="my-peer-server.example.com:443/" />
+                    <span class="diag-field-hint">Leave blank to use the public PeerJS cloud with an automatic mirror fallback.</span>
+                  </div>
+
+                  <div class="diag-field">
+                    <label for="online-custom-turn">CUSTOM TURN RELAY (OPTIONAL)</label>
+                    <input type="text" id="online-custom-turn" class="gate-pass-input" placeholder="turn:relay.example.com:3478|username|password" />
+                    <span class="diag-field-hint">
+                      Required only for strict/symmetric NATs. Separate several relays with commas.
+                      A free relay key from any TURN provider works here.
+                    </span>
+                  </div>
+
+                  <div class="diag-field">
+                    <label for="online-turn-api">TURN CREDENTIALS API URL (OPTIONAL)</label>
+                    <input type="text" id="online-turn-api" class="gate-pass-input" placeholder="https://your-app.metered.live/api/v1/turn/credentials?apiKey=..." />
+                    <span class="diag-field-hint">
+                      Any endpoint returning a JSON iceServers array works (Metered, Cloudflare, Twilio, your own coturn helper).
+                      Credentials are fetched fresh each time you host or join.
+                    </span>
+                  </div>
+
+                  <button type="button" id="online-save-net-btn" class="btn-secondary diag-save-btn">
+                    SAVE NETWORK SETTINGS &amp; RELINK
+                  </button>
+                </div>
+              </details>
             </div>
 
             <div class="form-group" id="turn-limit-group">
@@ -955,7 +1019,13 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- PeerJS signalling client. If the primary CDN is blocked, fall back to a
+       mirror so online play still works on locked-down networks. game.js only
+       touches window.Peer at connect time, so a late load is harmless. -->
+  <script
+    src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"
+    onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';s.onerror=function(){window.__peerLoadFailed=true;};document.head.appendChild(s);})()"
+  ></script>
   <script src="audio.js"></script>
   <script src="game.js"></script>
 </body>

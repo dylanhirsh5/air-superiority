@@ -4336,3 +4336,219 @@ html[lang="ja"] .deck-col-label {
   }
 }
 
+
+/* ==========================================================================
+   17. ONLINE LINK DIAGNOSTICS, INVITE LINK & RELAY SETUP
+   ========================================================================== */
+
+.online-invite-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.online-invite-row > label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+}
+
+.invite-link-plaque {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  background: var(--bg-white);
+  border: 1.5px solid var(--ink);
+  padding: 4px;
+}
+
+.invite-link-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ink);
+  padding: 4px 6px;
+  text-overflow: ellipsis;
+}
+
+.invite-link-input:focus {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: -2px;
+}
+
+.online-status-detail {
+  margin: 4px 2px 0;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  min-height: 1em;
+}
+
+.online-diagnostics {
+  margin-top: 10px;
+  border: 1.5px dashed var(--ink);
+  background: var(--bg-white);
+}
+
+.online-diagnostics > summary {
+  cursor: pointer;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  list-style: none;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.online-diagnostics > summary::-webkit-details-marker {
+  display: none;
+}
+
+.online-diagnostics > summary::after {
+  content: '▾';
+  position: absolute;
+  right: 14px;
+  color: var(--brand-primary);
+  font-size: 0.9rem;
+}
+
+.online-diagnostics[open] > summary::after {
+  content: '▴';
+}
+
+.online-diagnostics > summary {
+  position: relative;
+}
+
+.diag-summary-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.diag-summary-hint {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--ink-muted);
+}
+
+.diag-body {
+  padding: 10px;
+  border-top: 1.5px dashed var(--rule-hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.diag-test-btn,
+.diag-save-btn {
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.diag-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+
+.diag-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  padding: 4px 6px;
+  background: var(--bg-offwhite);
+  border-left: 4px solid var(--rule-hairline);
+}
+
+.diag-list .diag-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-light);
+  flex-shrink: 0;
+}
+
+.diag-list .diag-label {
+  flex: 1;
+  color: var(--ink);
+}
+
+.diag-list .diag-value {
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.diag-list li.ok {
+  border-left-color: #2E7D32;
+}
+
+.diag-list li.ok .diag-dot {
+  background: #2E7D32;
+}
+
+.diag-list li.ok .diag-value {
+  color: #2E7D32;
+}
+
+.diag-list li.bad {
+  border-left-color: var(--crimson);
+}
+
+.diag-list li.bad .diag-dot {
+  background: var(--crimson);
+}
+
+.diag-list li.bad .diag-value {
+  color: var(--crimson);
+}
+
+.diag-list li.pending .diag-dot {
+  background: var(--ink-light);
+  animation: pulseDot 0.8s infinite alternate;
+}
+
+.diag-summary-text {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--bg-offwhite);
+  border-left: 4px solid var(--brand-primary);
+  padding: 7px 9px;
+}
+
+.diag-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.diag-field label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+}
+
+.diag-field-hint {
+  font-size: 0.6rem;
+  line-height: 1.35;
+  color: var(--ink-light);
+}
