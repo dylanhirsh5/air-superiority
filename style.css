@@ -4552,3 +4552,189 @@ html[lang="ja"] .deck-col-label {
   line-height: 1.35;
   color: var(--ink-light);
 }
+
+/* ==========================================================================
+   17. TURN ACTION STAGING, APRON "Z" GATES & NORA THE MOODY TABBY ANCHOR
+   ========================================================================== */
+
+/* Legend Dot for Remote Apron "Z" Bus Gates */
+.legend-dot.zgate {
+  background: #E3B505;
+  border: 1.5px dashed #1A1A1A;
+  border-radius: 2px;
+}
+
+/* Nora the Moody Tabby Cat — Desk Slide & Paper-Tap Entry Animation */
+.anchor-stage.anchor-enter-nora-desk {
+  animation: anchorNoraDeskSlide 0.66s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes anchorNoraDeskSlide {
+  0% {
+    transform: translate(-95px, 18px) rotate(-3deg);
+    opacity: 0;
+  }
+  65% {
+    transform: translate(5px, -2px) rotate(0.8deg);
+    opacity: 1;
+  }
+  82% {
+    transform: translate(-2px, 1px) rotate(-0.3deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.speech-bubble[data-anchor-style="nora_cat"] {
+  border-top: 6px solid #D97724;
+  background: #FFFDF8;
+}
+
+.speech-bubble[data-anchor-style="nora_cat"] .anchor-quirk-banner {
+  color: #9A4B12;
+  border-bottom-color: #E6D5C3;
+}
+
+/* Turn Action Staging Controls (Confirm Action + Cancel Selection + Pass Turn) */
+.turn-action-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.secondary-turn-btns {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.secondary-turn-btns .btn-deck-primary {
+  flex: 1;
+}
+
+.btn-deck-confirm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  background: var(--brand-primary);
+  color: var(--brand-contrast-text);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+  animation: stagedConfirmPulse 1.35s infinite ease-in-out;
+}
+
+.btn-deck-confirm:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn-deck-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.btn-deck-confirm .btn-main-text {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.btn-deck-confirm .btn-sub-text {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  opacity: 0.9;
+  margin-top: 1px;
+}
+
+.btn-deck-cancel {
+  padding: 6px 10px;
+  background: var(--bg-paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.btn-deck-cancel:hover {
+  background: var(--ink);
+  color: var(--bg-white);
+}
+
+@keyframes stagedConfirmPulse {
+  0%, 100% {
+    box-shadow: 3px 3px 0 var(--ink), 0 0 0 0 var(--brand-glow);
+  }
+  50% {
+    box-shadow: 3px 3px 0 var(--ink), 0 0 0 6px var(--brand-glow);
+  }
+}
+
+/* Staged Card Aura in Hand Tray */
+.boarding-pass.staged-card {
+  transform: translateY(-9px) scale(1.02);
+  border-color: var(--brand-primary);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22), 0 0 0 3px var(--brand-primary);
+  z-index: 6;
+}
+
+.boarding-pass.staged-card .pass-stamp {
+  background: var(--brand-primary);
+  color: var(--brand-contrast-text);
+  border-color: var(--ink);
+}
+
+/* Mobile Dock Confirm Action Button */
+.mobile-confirm-action-btn {
+  min-height: 38px;
+  background: #1B5E20;
+  color: #FFFFFF;
+  border: 1.5px solid var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+/* Additional Status Chips for New Cards */
+.status-chip.codeshare {
+  background: #0B6E6E;
+  color: #FFFFFF;
+  border: 1px solid var(--ink);
+}
+
+.status-chip.shield {
+  background: #1E4DB7;
+  color: #FFFFFF;
+  border: 1px solid var(--ink);
+}
+
+.status-chip.loyalty {
+  background: #C08A2E;
+  color: #1A1A1A;
+  border: 1px solid var(--ink);
+}
+
+.hidden {
+  display: none !important;
+}
+

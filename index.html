@@ -575,12 +575,12 @@
       <!-- CENTER: INTERACTIVE TERMINAL CANVAS & ACTION DECK -->
       <section class="board-stage">
         <div id="canvas-wrapper" class="canvas-wrapper">
-          <!-- Contextual Instruction / Targeting Banner -->
+          <!-- Contextual Instruction / Targeting & Staging Banner -->
           <div id="board-banner" class="board-banner">
             <div class="banner-status-dot" id="banner-dot"></div>
-            <span id="board-prompt-text" data-i18n-html="board.defaultPrompt">YOUR TURN &mdash; ONE ACTION: claim an unclaimed gate pin, OR deploy one Flight Coupon below. Not both.</span>
-            <div id="opponent-target-bar" class="opponent-target-bar hidden" aria-label="Select Rival Carrier Target"></div>
-            <button type="button" id="cancel-target-btn" class="btn-cancel-target hidden" data-i18n="board.cancelTargetBtn">CANCEL TARGETING</button>
+            <span id="board-prompt-text" data-i18n-html="board.defaultPrompt">YOUR TURN &mdash; STAGE AN ACTION: select an unclaimed gate pin, OR select a Flight Coupon below, then click Confirm Action.</span>
+            <div id="opponent-target-bar" class="opponent-target-bar hidden" aria-label="Select Target"></div>
+            <button type="button" id="cancel-target-btn" class="btn-cancel-target hidden" data-i18n="board.cancelSelectionBtn">CANCEL SELECTION</button>
           </div>
 
           <!-- Camera Pan/Zoom Floating Controls -->
@@ -595,6 +595,7 @@
             <span class="legend-item"><i class="legend-dot hub"></i> <span data-i18n="legend.hub">ROTUNDA HUB (+180 PAX)</span></span>
             <span class="legend-item"><i class="legend-dot main"></i> <span data-i18n="legend.main">MAIN GATE (+120 PAX)</span></span>
             <span class="legend-item"><i class="legend-dot regional"></i> <span data-i18n="legend.regional">PIER GATE (+80 PAX)</span></span>
+            <span class="legend-item"><i class="legend-dot zgate"></i> <span data-i18n="legend.zgate">APRON &ldquo;Z&rdquo; BUS GATE (+95 PAX)</span></span>
             <span class="legend-item"><i class="legend-line"></i> <span data-i18n="legend.synergy">PULSING ROUTE = +25% / LINK</span></span>
             <span class="legend-item"><i class="legend-dot hint"></i> <span data-i18n="legend.controls">DRAG TO PAN • PINCH / SCROLL TO ZOOM</span></span>
           </div>
@@ -606,18 +607,19 @@
           <div id="gate-tooltip" class="gate-tooltip hidden" role="tooltip"></div>
         </div>
 
-        <!-- BOTTOM CONTROL DECK: HAND & TURN CONTROLS -->
+        <!-- BOTTOM CONTROL DECK: HAND & TURN STAGING CONTROLS -->
         <div class="bottom-deck" id="bottom-deck">
           <!-- Mobile Collapsible Card Dock Bar (Visible on <768px screens) -->
           <div class="mobile-dock-bar" id="mobile-dock-bar">
             <button type="button" id="mobile-dock-toggle-btn" class="mobile-dock-toggle-btn" aria-expanded="true">
               <span class="mobile-dock-toggle-label" id="mobile-dock-toggle-label" data-i18n="deck.mobileHideTray">HIDE BOARDING PASS TRAY ▼</span>
             </button>
+            <button type="button" id="mobile-confirm-action-btn" class="mobile-confirm-action-btn hidden" data-i18n="deck.confirmAction">CONFIRM ACTION &#10003;</button>
             <button type="button" id="mobile-end-turn-quick-btn" class="mobile-end-turn-quick-btn" data-i18n="deck.passTurn">PASS TURN</button>
           </div>
 
           <div class="deck-status-col">
-            <div class="deck-col-label" data-i18n="deck.turnActionLabel">TURN ACTION (CHOOSE ONE)</div>
+            <div class="deck-col-label" data-i18n="deck.turnActionLabel">TURN ACTION (STAGE &amp; CONFIRM)</div>
             <div class="action-economy">
               <div class="econ-option" id="econ-gate">
                 <span class="econ-key">A</span>
@@ -647,10 +649,19 @@
               <div class="tally-cell"><span data-i18n="deck.drawPile">DRAW PILE</span><strong id="deck-remaining">0</strong></div>
               <div class="tally-cell"><span data-i18n="deck.discardPile">DISCARD</span><strong id="discard-count">0</strong></div>
             </div>
-            <button type="button" id="end-turn-btn" class="btn-deck-primary" title="Pass or end your turn (Spacebar)">
-              <span class="btn-main-text" id="end-turn-main" data-i18n="deck.passTurn">PASS TURN</span>
-              <span class="btn-sub-text" id="end-turn-sub" data-i18n="deck.takeNoAction">Take no action &#10153;</span>
-            </button>
+            <div class="turn-action-btn-stack">
+              <button type="button" id="confirm-action-btn" class="btn-deck-confirm hidden" disabled title="Commit your staged gate claim or Flight Coupon play (Enter)">
+                <span class="btn-main-text" id="confirm-action-main" data-i18n="deck.confirmAction">CONFIRM ACTION</span>
+                <span class="btn-sub-text" id="confirm-action-sub" data-i18n="deck.commitStagedSub">Execute &amp; advance turn &#10003;</span>
+              </button>
+              <div class="secondary-turn-btns">
+                <button type="button" id="cancel-stage-btn" class="btn-deck-cancel hidden" data-i18n="board.cancelSelectionBtn">CANCEL SELECTION</button>
+                <button type="button" id="end-turn-btn" class="btn-deck-primary" title="Pass your turn with no action (Spacebar)">
+                  <span class="btn-main-text" id="end-turn-main" data-i18n="deck.passTurn">PASS TURN</span>
+                  <span class="btn-sub-text" id="end-turn-sub" data-i18n="deck.takeNoAction">Take no action &#10153;</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -932,20 +943,26 @@
         </div>
 
         <div class="rules-block">
-          <h3 data-i18n="rules.sec4Title">4. THE TWELVE FLIGHT COUPONS</h3>
+          <h3 data-i18n="rules.sec4Title">4. THE EIGHTEEN FLIGHT COUPONS &amp; APRON &ldquo;Z&rdquo; GATES</h3>
           <ul class="coupon-rules-list">
-            <li data-i18n-html="rules.card1"><strong>Gate Change:</strong> Convert one opponent-controlled gate to your airline.</li>
+            <li data-i18n-html="rules.card1"><strong>Gate Change:</strong> Permanently convert one opponent-controlled gate to your airline.</li>
             <li data-i18n-html="rules.card2"><strong>Runway Maintenance:</strong> Close any gate &mdash; passenger generation disabled for 2 full rounds.</li>
             <li data-i18n-html="rules.card3"><strong>Lounge Upgrade:</strong> Permanently double one of your gates' base passenger output.</li>
-            <li data-i18n-html="rules.card4"><strong>Charter Buyout:</strong> Instantly claim any unclaimed gate with an immediate bonus boarding wave.</li>
+            <li data-i18n-html="rules.card4"><strong>Charter Buyout:</strong> Buy out a rival's dispatch office to steal 1 random coupon from their hand.</li>
             <li data-i18n-html="rules.card5"><strong>Baggage Strike:</strong> Siphon 25% (max 400) of a rival carrier's accumulated passengers.</li>
             <li data-i18n-html="rules.card6"><strong>Direct Flight Charter:</strong> Immediate lump sum of <strong>+150 passengers</strong>.</li>
-            <li data-i18n-html="rules.card7"><strong>Terminal Expansion:</strong> Spawn 1 new neutral gate wired into the nearest corridor.</li>
+            <li data-i18n-html="rules.card7"><strong>Terminal Expansion:</strong> Playable anytime &mdash; spawns a claimed gate wired to your largest owned cluster (or a claimed Apron &ldquo;Z&rdquo; Bus Gate if concourse slots are full).</li>
             <li data-i18n-html="rules.card8"><strong>FAA Audit:</strong> Every opposing carrier discards their oldest coupon.</li>
-            <li data-i18n-html="rules.card9"><strong>Holding Pattern:</strong> Freeze a target gate for 1 round and siphon +90 passengers from delayed traffic.</li>
-            <li data-i18n-html="rules.card10"><strong>Supersonic Jet:</strong> Permanently boost one of your gates by +60 base PAX and board an instant supersonic wave.</li>
-            <li data-i18n-html="rules.card11"><strong>Smear Campaign:</strong> Sabotage a rival carrier's PR &mdash; drain 20% of their passengers and void their newest coupon.</li>
-            <li data-i18n-html="rules.card12"><strong>Hostile Takeover:</strong> Seize an opponent's non-shielded gate and immediately collect 100% of its base passenger yield.</li>
+            <li data-i18n-html="rules.card9"><strong>Holding Pattern:</strong> Stack a rival carrier over the field so they skip their entire next turn.</li>
+            <li data-i18n-html="rules.card10"><strong>Supersonic Jet:</strong> Mach 2 service doubles your entire network output for 1 full round.</li>
+            <li data-i18n-html="rules.card11"><strong>Smear Campaign:</strong> Halve the next boarding payout from a rival's largest connected gate chain.</li>
+            <li data-i18n-html="rules.card12"><strong>Hostile Takeover:</strong> Seize a rival gate for one turn (reverts at round end).</li>
+            <li data-i18n-html="rules.card13"><strong>Emergency Landing:</strong> Force an opponent's gate to relocate to a vacant corridor node &mdash; or banish it to a newly spawned Apron &ldquo;Z&rdquo; Bus Gate!</li>
+            <li data-i18n-html="rules.card14"><strong>Code-Share Agreement:</strong> For 2 full rounds, both you and a targeted rival receive +25% bonus passenger revenue from each other's gates.</li>
+            <li data-i18n-html="rules.card15"><strong>Severe Weather:</strong> Target a specific concourse branch to halve (&minus;50%) passenger output across all gates on that branch for 1 round.</li>
+            <li data-i18n-html="rules.card16"><strong>Loyalty Program:</strong> Target one of your gates to grant a flat +50 passenger bonus every boarding phase for the next 3 rounds.</li>
+            <li data-i18n-html="rules.card17"><strong>Fortress Hub:</strong> Place a retro radar shield over one of your gates, making it immune to rival cards until your next turn begins.</li>
+            <li data-i18n-html="rules.card18"><strong>Nationalize the Industry (1x Singleton):</strong> Immediately collect the passenger output of <em>every single gate on the map</em> (yours, rival, and neutral) for a one-time lump sum &mdash; then permanently purge this card from the match!</li>
           </ul>
         </div>
         <div class="rules-block">
