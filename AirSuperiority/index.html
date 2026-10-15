@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Air Superiority — Idlewild Interactive</title>
+  <!-- Mid-Century Modern & Multi-Script Typography Stack (EN / JA / HU / ES).
+       100% self-contained local/system font rendering with zero external requests. -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="twa-crimson">
+  <!-- ================= SAUL BASS ANIMATED TITLE SEQUENCE ================= -->
+  <div id="title-sequence" class="title-sequence active" role="dialog" aria-labelledby="title-wordmark">
+    <!-- Handcrafted geometric cutouts: every shape is pure CSS/SVG -->
+    <div class="bass-stage" aria-hidden="true">
+      <span class="bass-shape shape-circle"></span>
+      <span class="bass-shape shape-wedge"></span>
+      <span class="bass-shape shape-bar-1"></span>
+      <span class="bass-shape shape-bar-2"></span>
+      <span class="bass-shape shape-bar-3"></span>
+      <span class="bass-shape shape-ring"></span>
+      <svg class="bass-jet" viewBox="0 0 220 90">
+        <path d="M4 62 196 10l-28 70-44-26z" fill="#111111" />
+        <path d="M124 54 96 72l6-26z" fill="var(--brand-primary)" />
+      </svg>
+      <div class="radar-sweep"></div>
+    </div>
+
+    <!-- Vintage Split-Flap Language Switcher on Title Screen -->
+    <div class="title-lang-bar">
+      <div class="lang-switcher" role="group" aria-label="Language Selection">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <span class="lang-sep">|</span>
+        <button type="button" class="lang-btn" data-lang="ja">JA</button>
+        <span class="lang-sep">|</span>
+        <button type="button" class="lang-btn" data-lang="hu">HU</button>
+        <span class="lang-sep">|</span>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+      </div>
+    </div>
+
+    <div class="title-content">
+      <div class="title-eyebrow">
+        <span class="eyebrow-rule"></span>
+        <span data-i18n="title.eyebrow">AN INDEPENDENT JET AGE STRATEGY PICTURE</span>
+        <span class="eyebrow-rule"></span>
+      </div>
+      <h1 id="title-wordmark" class="title-wordmark">
+        <span class="word-air" data-i18n="title.wordAir">AIR</span>
+        <span class="word-sup" data-i18n="title.wordSup">SUPERIORITY</span>
+      </h1>
+      <div class="title-tagline" data-i18n="title.tagline">GATE MONOPOLY &bull; ROUTE SYNERGY &bull; TERMINAL WARFARE</div>
+
+      <div class="title-actions">
+        <button type="button" id="title-start-btn" class="btn-title primary">
+          <span class="btn-flap" data-i18n="title.startGame">START GAME</span>
+        </button>
+        <button type="button" id="title-settings-btn" class="btn-title">
+          <span class="btn-flap" data-i18n="title.settings">SETTINGS</span>
+        </button>
+        <button type="button" id="title-howto-btn" class="btn-title">
+          <span class="btn-flap" data-i18n="title.howToPlay">HOW TO PLAY</span>
+        </button>
+      </div>
+
+      <div class="title-credit" data-i18n="title.credit">IDLEWILD INTERACTIVE STUDIO &bull; INTERNATIONAL HUB COMMISSION &bull; NO. 084-9921-JFK</div>
+    </div>
+
+    <!-- Split-flap transition curtain -->
+    <div id="flap-curtain" class="flap-curtain" aria-hidden="true"></div>
+  </div>
+
+  <!-- ================= MAIN MENU & 1960s TICKET SETUP OVERLAY ================= -->
+  <div id="main-menu" class="modal-overlay" role="dialog" aria-labelledby="menu-title">
+    <div class="menu-ticket">
+      <!-- Ticket Stub Header -->
+      <header class="ticket-header">
+        <div class="ticket-header-left">
+          <div class="ticket-eyebrow" data-i18n="menu.eyebrow">IDLEWILD INTERACTIVE • INTERNATIONAL HUB COMMISSION</div>
+          <h1 id="menu-title" class="game-title" data-i18n="menu.title">AIR SUPERIORITY</h1>
+          <p class="game-subtitle" data-i18n="menu.subtitle">TERMINAL BLUEPRINT &amp; GATE MONOPOLY STRATEGY</p>
+        </div>
+        <div class="ticket-header-right">
+          <div class="lang-switcher ticket-lang-switcher" role="group" aria-label="Language Selection">
+            <button type="button" class="lang-btn active" data-lang="en">EN</button>
+            <span class="lang-sep">|</span>
+            <button type="button" class="lang-btn" data-lang="ja">JA</button>
+            <span class="lang-sep">|</span>
+            <button type="button" class="lang-btn" data-lang="hu">HU</button>
+            <span class="lang-sep">|</span>
+            <button type="button" class="lang-btn" data-lang="es">ES</button>
+          </div>
+          <div class="ticket-stamp" data-i18n="menu.stamp">FIRST CLASS CHARTER</div>
+          <div class="ticket-serial">NO. 084-9921-JFK</div>
+        </div>
+      </header>
+
+      <form id="setup-form" class="setup-form" autocomplete="off">
+        <!-- Prominent 3-Way Game Mode Toggle Bar -->
+        <div class="mode-selector-bar" role="radiogroup" aria-label="Select Game Mode">
+          <div class="mode-selector-label" data-i18n="setup.dispatchMode">FLIGHT DISPATCH MODE</div>
+          <div class="mode-toggle-group mode-toggle-3way" id="game-mode-control">
+            <button type="button" class="mode-toggle-btn active" data-mode="solo" role="radio" aria-checked="true">
+              <span class="mode-radio-dot"></span>
+              <span class="mode-btn-copy">
+                <strong data-i18n="setup.modeSoloTitle">SOLO FLIGHT (VS AI)</strong>
+                <small data-i18n="setup.modeSoloDesc">Command your flagship airline against rival charter syndicates</small>
+              </span>
+            </button>
+            <button type="button" class="mode-toggle-btn" data-mode="coop" role="radio" aria-checked="false">
+              <span class="mode-radio-dot"></span>
+              <span class="mode-btn-copy">
+                <strong data-i18n="setup.modeCoopTitle">PASS &amp; PLAY (LOCAL)</strong>
+                <small data-i18n="setup.modeCoopDesc">2 to 4 captains share the terminal with privacy handoffs</small>
+              </span>
+            </button>
+            <button type="button" class="mode-toggle-btn" data-mode="online" role="radio" aria-checked="false">
+              <span class="mode-radio-dot"></span>
+              <span class="mode-btn-copy">
+                <strong data-i18n="setup.modeOnlineTitle">ONLINE FLIGHT (P2P MULTIPLAYER)</strong>
+                <small data-i18n="setup.modeOnlineDesc">Host or join a private Departure Lounge via Room Code &amp; Gate Pass</small>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="setup-grid">
+          <!-- Column 1: Airline Identity & 33-Icon Library -->
+          <div class="setup-section">
+            <div class="section-heading">
+              <span class="step-badge">01</span>
+              <span id="registration-heading-text" data-i18n="setup.carrierReg">CARRIER REGISTRATION &amp; INSIGNIA</span>
+            </div>
+
+            <!-- Pass & Play Captain Slot Selector Tabs (Shown in Local Co-Op Mode) -->
+            <div id="coop-slot-tabs-wrapper" class="coop-slot-tabs-wrapper hidden">
+              <div class="label-row">
+                <label data-i18n="setup.selectCaptain">SELECT CAPTAIN TO CONFIGURE (NAME, COLOR &amp; EMBLEM)</label>
+                <span id="editing-slot-indicator" class="field-caption-inline">Editing: <strong>Captain 01</strong></span>
+              </div>
+              <div id="coop-slot-tabs" class="coop-slot-tabs" role="tablist" aria-label="Player Slots">
+                <!-- Populated dynamically by game.js for 2-4 players -->
+              </div>
+            </div>
+
+            <div class="form-row-split">
+              <div class="form-group flex-grow">
+                <label for="airline-name" id="airline-name-label" data-i18n="setup.airlineCallsign">AIRLINE CALLSIGN / CARRIER NAME</label>
+                <input
+                  type="text"
+                  id="airline-name"
+                  maxlength="22"
+                  value="TRANS WORLD AIR"
+                  placeholder="Enter Airline Name..."
+                  data-i18n-placeholder="setup.airlinePlaceholder"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label data-i18n="setup.pinLivery">PIN LIVERY ACCENT</label>
+                <div id="color-palette" class="color-palette" role="radiogroup" aria-label="Select Fleet Color">
+                  <button type="button" class="color-swatch selected" data-color="#D1192A" data-name="TWA Crimson" style="--swatch-color: #D1192A" title="TWA Crimson"></button>
+                  <button type="button" class="color-swatch" data-color="#1E4DB7" data-name="Pan Am Azure" style="--swatch-color: #1E4DB7" title="Pan Am Azure"></button>
+                  <button type="button" class="color-swatch" data-color="#111111" data-name="Jet Black" style="--swatch-color: #111111" title="Jet Black"></button>
+                  <button type="button" class="color-swatch" data-color="#0B6E6E" data-name="Seafoam Teal" style="--swatch-color: #0B6E6E" title="Seafoam Teal"></button>
+                  <button type="button" class="color-swatch" data-color="#C2410C" data-name="Burnt Tangerine" style="--swatch-color: #C2410C" title="Burnt Tangerine"></button>
+                  <button type="button" class="color-swatch" data-color="#8A8B2C" data-name="Olive Gold" style="--swatch-color: #8A8B2C" title="Olive Gold"></button>
+                  <button type="button" class="color-swatch" data-color="#8C9196" data-name="Concorde Silver" style="--swatch-color: #8C9196" title="Concorde Silver"></button>
+                  <button type="button" class="color-swatch" data-color="#6B2D5B" data-name="Plum Lounge" style="--swatch-color: #6B2D5B" title="Plum Lounge"></button>
+                  <button type="button" class="color-swatch" data-color="#C08A2E" data-name="Desert Ochre" style="--swatch-color: #C08A2E" title="Desert Ochre"></button>
+                  <button type="button" class="color-swatch" data-color="#E3B505" data-name="Canary Yellow" style="--swatch-color: #E3B505" title="Canary Yellow"></button>
+                  <button type="button" class="color-swatch" data-color="#2E7D32" data-name="Continental Green" style="--swatch-color: #2E7D32" title="Continental Green"></button>
+                </div>
+                <div id="selected-color-label" class="field-caption">Pin Accent: <strong>TWA Crimson</strong></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label data-i18n="setup.corporateEmblem">CORPORATE EMBLEM (33 AUTHORIZED INSIGNIAS)</label>
+                <span id="selected-logo-label" class="field-caption-inline">Selected: <strong>Swept Wing</strong></span>
+              </div>
+              <div id="logo-grid" class="logo-grid" role="radiogroup" aria-label="Select Airline Logo">
+                <!-- Populated with 33 inline SVG icons by game.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Flight Operations & Hub Parameters -->
+          <div class="setup-section">
+            <div class="section-heading">
+              <span class="step-badge">02</span>
+              <span data-i18n="setup.flightOps">OPERATING PARAMETERS &amp; RIVALS</span>
+            </div>
+
+            <!-- SOLO FLIGHT CONTROLS (Rival Count & Difficulty Slider) -->
+            <div id="solo-setup-controls">
+              <div class="form-group">
+                <label data-i18n="setup.rivalAirlines">COMPETING RIVAL CARRIERS</label>
+                <div class="segmented-control" id="bot-count-control">
+                  <button type="button" class="seg-btn" data-bots="1" data-i18n="setup.rivals1">1 RIVAL (2P)</button>
+                  <button type="button" class="seg-btn" data-bots="2" data-i18n="setup.rivals2">2 RIVALS (3P)</button>
+                  <button type="button" class="seg-btn active" data-bots="3" data-i18n="setup.rivals3">3 RIVALS (4P)</button>
+                </div>
+              </div>
+
+              <div class="form-group" id="bot-difficulty-group">
+                <div class="label-row">
+                  <label for="bot-difficulty" data-i18n="setup.syndicateAggression">RIVAL SYNDICATE AGGRESSION</label>
+                  <span id="difficulty-badge" class="difficulty-pill" data-i18n="setup.diffNormal">NORMAL</span>
+                </div>
+                <input
+                  type="range"
+                  id="bot-difficulty"
+                  min="1"
+                  max="3"
+                  step="1"
+                  value="2"
+                  class="retro-slider"
+                />
+                <div class="slider-ticks">
+                  <span data-level="1" data-i18n="setup.diffEasy">EASY</span>
+                  <span data-level="2" class="active" data-i18n="setup.diffNormal">NORMAL</span>
+                  <span data-level="3" data-i18n="setup.diffHard">HARD</span>
+                </div>
+                <p id="difficulty-desc" class="field-caption" data-i18n-html="setup.diffDescNormal">
+                  <strong>Normal (Regional Carrier):</strong> Rivals prioritize high-yield empty gates and play tactical cards opportunistically.
+                </p>
+              </div>
+            </div>
+
+            <!-- LOCAL CO-OP CONTROLS (2 to 4 Captains & Live Roster Manifest) -->
+            <div id="coop-setup-controls" class="hidden">
+              <div class="form-group">
+                <label data-i18n="setup.coopCaptainsLabel">REGISTERED CAPTAINS (PASS &amp; PLAY)</label>
+                <div class="segmented-control" id="coop-count-control">
+                  <button type="button" class="seg-btn active" data-humans="2" data-i18n="setup.coop2P">2 PLAYERS</button>
+                  <button type="button" class="seg-btn" data-humans="3" data-i18n="setup.coop3P">3 PLAYERS</button>
+                  <button type="button" class="seg-btn" data-humans="4" data-i18n="setup.coop4P">4 PLAYERS</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="label-row">
+                  <label data-i18n="setup.coopManifestLabel">PASS &amp; PLAY FLIGHT MANIFEST</label>
+                  <span class="field-caption-inline" data-i18n="setup.coopClickToEdit">Tap or click any card to edit</span>
+                </div>
+                <div id="coop-roster-list" class="coop-roster-list">
+                  <!-- Populated dynamically with 2-4 player manifest cards -->
+                </div>
+              </div>
+            </div>
+
+            <!-- ONLINE P2P MULTIPLAYER DEPARTURE LOUNGE LOBBY -->
+            <div id="online-setup-controls" class="online-lobby-wrapper hidden">
+              <div class="online-role-tabs" role="tablist" aria-label="Online Role Selection">
+                <button type="button" id="online-role-host-btn" class="online-role-tab active" data-role="host" role="tab" aria-selected="true">
+                  <span class="role-tab-eyebrow" data-i18n="online.towerControl">TOWER DISPATCH</span>
+                  <strong data-i18n="online.hostOptionTitle">HOST DEPARTURE LOUNGE</strong>
+                </button>
+                <button type="button" id="online-role-join-btn" class="online-role-tab" data-role="join" role="tab" aria-selected="false">
+                  <span class="role-tab-eyebrow" data-i18n="online.inboundCharter">INBOUND CHARTER</span>
+                  <strong data-i18n="online.joinOptionTitle">JOIN VIA ROOM CODE</strong>
+                </button>
+              </div>
+
+              <!-- HOST PANEL -->
+              <div id="online-host-panel" class="online-subpanel">
+                <div class="online-code-row">
+                  <div class="online-code-box">
+                    <label data-i18n="online.roomCodeLabel">ROOM CODE (SHARE WITH CAPTAINS)</label>
+                    <div class="room-code-plaque">
+                      <span id="online-room-code-display" class="room-code-digits">TWA-404</span>
+                      <button type="button" id="online-copy-code-btn" class="btn-code-util" data-i18n="online.copyBtn">COPY</button>
+                      <button type="button" id="online-regen-code-btn" class="btn-code-util" data-i18n="online.newCodeBtn">NEW</button>
+                    </div>
+                  </div>
+
+                  <div class="online-pass-box">
+                    <label for="online-host-password" data-i18n="online.gatePassOptional">GATE PASS (OPTIONAL PASSWORD)</label>
+                    <input
+                      type="text"
+                      id="online-host-password"
+                      class="gate-pass-input"
+                      maxlength="16"
+                      placeholder="Open Gate (No Pass)"
+                      data-i18n-placeholder="online.hostPassPlaceholder"
+                    />
+                  </div>
+                </div>
+
+                <div id="online-host-status-bar" class="online-status-banner status-waiting">
+                  <span class="status-led"></span>
+                  <span id="online-host-status-text" data-i18n="online.hostListening">Control Tower broadcasting — awaiting captains at the gate...</span>
+                </div>
+
+                <div class="online-roster-section">
+                  <div class="label-row">
+                    <label data-i18n="online.connectedRosterLabel">DEPARTURE LOUNGE ROSTER (2–4 CAPTAINS)</label>
+                    <span id="online-player-count-badge" class="field-caption-inline">1 / 4 BOARDED</span>
+                  </div>
+                  <div id="online-lobby-roster" class="online-roster-list">
+                    <!-- Populated dynamically as peers connect -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- JOIN PANEL -->
+              <div id="online-join-panel" class="online-subpanel hidden">
+                <div class="online-code-row">
+                  <div class="online-code-box">
+                    <label for="online-join-code" data-i18n="online.enterRoomCode">ENTER ROOM CODE</label>
+                    <input
+                      type="text"
+                      id="online-join-code"
+                      class="room-code-input"
+                      maxlength="10"
+                      placeholder="e.g. TWA-404"
+                      data-i18n-placeholder="online.joinCodePlaceholder"
+                    />
+                  </div>
+
+                  <div class="online-pass-box">
+                    <label for="online-join-password" data-i18n="online.enterGatePass">GATE PASS (PASSWORD)</label>
+                    <input
+                      type="password"
+                      id="online-join-password"
+                      class="gate-pass-input"
+                      maxlength="16"
+                      placeholder="Leave blank if open"
+                      data-i18n-placeholder="online.joinPassPlaceholder"
+                    />
+                  </div>
+                </div>
+
+                <div class="online-join-actions">
+                  <button type="button" id="online-connect-btn" class="btn-primary online-connect-btn">
+                    <span id="online-connect-btn-text" data-i18n="online.connectTowerBtn">REQUEST BOARDING CLEARANCE</span>
+                  </button>
+                </div>
+
+                <div id="online-join-status-bar" class="online-status-banner status-idle">
+                  <span class="status-led"></span>
+                  <span id="online-join-status-text" data-i18n="online.joinIdleStatus">Enter a Room Code from your Host Captain and request clearance.</span>
+                </div>
+
+                <div class="online-roster-section">
+                  <div class="label-row">
+                    <label data-i18n="online.connectedRosterLabel">DEPARTURE LOUNGE ROSTER (2–4 CAPTAINS)</label>
+                    <span id="online-guest-count-badge" class="field-caption-inline">STANDBY</span>
+                  </div>
+                  <div id="online-guest-roster" class="online-roster-list">
+                    <!-- Populated when connected to host -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" id="turn-limit-group">
+              <label data-i18n="setup.turnLimitLabel">SCHEDULED TURN LIMIT</label>
+              <div class="segmented-control" id="turn-limit-control">
+                <button type="button" class="seg-btn active" data-turns="20" data-i18n="setup.turns20">20 ROUNDS (STANDARD)</button>
+                <button type="button" class="seg-btn" data-turns="30" data-i18n="setup.turns30">30 ROUNDS (MARATHON)</button>
+              </div>
+            </div>
+
+            <div class="victory-brief-box" id="setup-directives-box">
+              <div class="brief-title" data-i18n="setup.directivesTitle">ARCHITECTURAL &amp; FLIGHT DIRECTIVES</div>
+              <ul class="brief-list">
+                <li data-i18n-html="setup.directive1"><strong>Dynamic Hub Blueprint:</strong> Every match drafts a fresh terminal layout, gate topology, and passenger commuter flow.</li>
+                <li data-i18n-html="setup.directive2"><strong>One Action Per Turn:</strong> Each turn you may claim <strong>one gate</strong> <em>or</em> play <strong>one Action Card</strong> &mdash; never both. Pass if neither suits.</li>
+                <li data-i18n-html="setup.directive3"><strong>Auto-Draw &amp; 3-Card Limit:</strong> Draw 1 coupon automatically each turn; the oldest coupon is voided if your hand exceeds 3.</li>
+                <li data-i18n-html="setup.directive4"><strong>Route Synergy:</strong> Each directly connected gate held by the same airline compounds that gate's output by <strong>+25%</strong>.</li>
+                <li data-i18n-html="setup.directive5"><strong>Sudden Death Majority:</strong> Immediately win by controlling a strict majority of all gates.</li>
+                <li data-i18n-html="setup.directive6"><strong>Passenger Supremacy:</strong> Otherwise, highest total passengers moved at the turn limit wins.</li>
+                <li data-i18n-html="setup.directive7"><strong>Touch &amp; Mouse Controls:</strong> Drag with 1 finger or mouse to pan; pinch with 2 fingers or scroll wheel to zoom.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-footer">
+          <button type="button" id="open-manual-from-menu" class="btn-secondary" data-i18n="setup.manualBtn">
+            FLIGHT MANUAL &amp; RULES
+          </button>
+          <button type="submit" id="start-game-btn" class="btn-primary">
+            <span id="start-game-btn-text" data-i18n="setup.launchBtn">ISSUE BOARDING PASS &amp; LAUNCH</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M2 12 L22 4 L15 21 L11 14 L2 12 Z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MAIN GAME INTERFACE ================= -->
+  <div id="game-container" class="game-container">
+    <!-- TOP MINIMALIST TWA HEADER BAR -->
+    <header id="top-hud" class="top-hud">
+      <div class="hud-brand">
+        <div class="brand-emblem">
+          <svg viewBox="0 0 36 36" width="30" height="30">
+            <circle cx="18" cy="18" r="16" fill="var(--brand-primary)" />
+            <path d="M6 20 L30 11 L20 27 L16 20 Z" fill="var(--brand-contrast-text)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="hud-title" data-i18n="hud.title">AIR SUPERIORITY</div>
+          <div class="hud-subtitle" data-i18n="hud.subtitle">TERMINAL ARCHITECTURAL BLUEPRINT • IDLEWILD SECTOR</div>
+        </div>
+      </div>
+
+      <!-- Clean Ticket Telemetry Counters -->
+      <div class="hud-telemetry">
+        <div class="telemetry-box">
+          <span class="telemetry-label" data-i18n="hud.roundLabel">ROUND</span>
+          <div class="flap-display" id="round-display">01 / 20</div>
+        </div>
+        <div class="telemetry-box">
+          <span class="telemetry-label" data-i18n="hud.majorityLabel">MAJORITY GOAL</span>
+          <div class="flap-display accent-crimson" id="majority-display">9 / 16 GATES</div>
+        </div>
+        <div class="telemetry-box" id="topology-hud" title="Terminal topology for this match">
+          <span class="telemetry-label" data-i18n="hud.topologyLabel">TOPOLOGY</span>
+          <div class="flap-display" id="map-archetype-display">CENTRAL HUB &amp; SPOKES</div>
+        </div>
+        <div class="telemetry-box world-event-telemetry" id="world-event-hud" title="Current World Event Effect">
+          <span class="telemetry-label" data-i18n="hud.directiveLabel">GLOBAL DIRECTIVE</span>
+          <div class="flap-display" id="active-world-name">CLEAR SKIES (1.0x)</div>
+        </div>
+      </div>
+
+      <!-- Sequential Turn Order Strip -->
+      <div id="turn-order-strip" class="turn-order-strip" aria-label="Turn Order">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="hud-actions">
+        <div class="lang-switcher hud-lang-switcher" role="group" aria-label="Language Selection">
+          <button type="button" class="lang-btn active" data-lang="en">EN</button>
+          <span class="lang-sep">|</span>
+          <button type="button" class="lang-btn" data-lang="ja">JA</button>
+          <span class="lang-sep">|</span>
+          <button type="button" class="lang-btn" data-lang="hu">HU</button>
+          <span class="lang-sep">|</span>
+          <button type="button" class="lang-btn" data-lang="es">ES</button>
+        </div>
+        <button type="button" id="regen-map-btn" class="hud-icon-btn" title="Draft a fresh terminal layout (restarts current match)" data-i18n="hud.newMapBtn">
+          NEW MAP
+        </button>
+        <button type="button" id="music-toggle-btn" class="hud-icon-btn" title="Toggle the bossa-nova lounge soundtrack">
+          MUSIC: ON
+        </button>
+        <button type="button" id="sfx-toggle-btn" class="hud-icon-btn" title="Toggle Retro Audio Chimes">
+          SFX: ON
+        </button>
+        <button type="button" id="settings-btn" class="hud-icon-btn" title="Audio &amp; presentation settings" data-i18n="hud.settingsBtn">
+          SETTINGS
+        </button>
+        <button type="button" id="rules-btn" class="hud-icon-btn" title="View Flight Manual" data-i18n="hud.manualBtn">
+          MANUAL
+        </button>
+        <button type="button" id="new-game-btn" class="hud-icon-btn danger" title="Return to Setup" data-i18n="hud.setupBtn">
+          SETUP
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN WORKSPACE GRID -->
+    <main class="workspace-grid">
+      <!-- LEFT SIDEBAR: MINIMALIST TICKET SCOREBOARD & LOG -->
+      <aside class="sidebar-panel">
+        <div class="panel-card standings-card">
+          <div class="panel-header">
+            <h3 data-i18n="sidebar.standingsTitle">CARRIER STANDINGS</h3>
+            <span class="panel-tag" data-i18n="sidebar.telemetryTag">LIVE TELEMETRY</span>
+          </div>
+          <div id="scoreboard-list" class="scoreboard-list">
+            <!-- Populated dynamically per player -->
+          </div>
+        </div>
+
+        <!-- ACTIVE WORLD EVENT CARD PANEL -->
+        <div class="panel-card world-deck-panel">
+          <div class="panel-header">
+            <h3 data-i18n="sidebar.bulletinTitle">WORLD AVIATION BULLETIN</h3>
+            <span class="panel-tag crimson" id="world-deck-remaining">DECK: 7</span>
+          </div>
+          <div id="world-event-box" class="world-event-box">
+            <div class="world-event-title" id="sidebar-world-title">INAUGURAL CLEAR SKIES</div>
+            <div class="world-event-desc" id="sidebar-world-desc">
+              Standard flight operations across all concourses. Drawn at the end of every round.
+            </div>
+          </div>
+        </div>
+
+        <!-- FLIGHT CONTROL LOG -->
+        <div class="panel-card log-card">
+          <div class="panel-header">
+            <h3 data-i18n="sidebar.dispatchLogTitle">DISPATCH LOG</h3>
+            <span class="panel-tag" data-i18n="sidebar.towerTag">TOWER</span>
+          </div>
+          <ul id="flight-log" class="flight-log">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+      </aside>
+
+      <!-- CENTER: INTERACTIVE TERMINAL CANVAS & ACTION DECK -->
+      <section class="board-stage">
+        <div id="canvas-wrapper" class="canvas-wrapper">
+          <!-- Contextual Instruction / Targeting Banner -->
+          <div id="board-banner" class="board-banner">
+            <div class="banner-status-dot" id="banner-dot"></div>
+            <span id="board-prompt-text" data-i18n-html="board.defaultPrompt">YOUR TURN &mdash; ONE ACTION: claim an unclaimed gate pin, OR deploy one Flight Coupon below. Not both.</span>
+            <div id="opponent-target-bar" class="opponent-target-bar hidden" aria-label="Select Rival Carrier Target"></div>
+            <button type="button" id="cancel-target-btn" class="btn-cancel-target hidden" data-i18n="board.cancelTargetBtn">CANCEL TARGETING</button>
+          </div>
+
+          <!-- Camera Pan/Zoom Floating Controls -->
+          <div class="camera-controls" aria-label="Map Camera Controls">
+            <button type="button" id="zoom-in-btn" class="cam-btn" title="Zoom In (+)">+</button>
+            <button type="button" id="zoom-out-btn" class="cam-btn" title="Zoom Out (−)">−</button>
+            <button type="button" id="zoom-reset-btn" class="cam-btn reset" title="Reset Camera Pan & Zoom">100%</button>
+          </div>
+
+          <!-- Minimalist Legend Overlay -->
+          <div class="canvas-legend">
+            <span class="legend-item"><i class="legend-dot hub"></i> <span data-i18n="legend.hub">ROTUNDA HUB (+180 PAX)</span></span>
+            <span class="legend-item"><i class="legend-dot main"></i> <span data-i18n="legend.main">MAIN GATE (+120 PAX)</span></span>
+            <span class="legend-item"><i class="legend-dot regional"></i> <span data-i18n="legend.regional">PIER GATE (+80 PAX)</span></span>
+            <span class="legend-item"><i class="legend-line"></i> <span data-i18n="legend.synergy">PULSING ROUTE = +25% / LINK</span></span>
+            <span class="legend-item"><i class="legend-dot hint"></i> <span data-i18n="legend.controls">DRAG TO PAN • PINCH / SCROLL TO ZOOM</span></span>
+          </div>
+
+          <!-- HTML5 Game Board Canvas -->
+          <canvas id="board-canvas" width="1100" height="620" aria-label="Airport Terminal Blueprint"></canvas>
+
+          <!-- Sleek 1960s Ticket Gate Inspection Tooltip -->
+          <div id="gate-tooltip" class="gate-tooltip hidden" role="tooltip"></div>
+        </div>
+
+        <!-- BOTTOM CONTROL DECK: HAND & TURN CONTROLS -->
+        <div class="bottom-deck" id="bottom-deck">
+          <!-- Mobile Collapsible Card Dock Bar (Visible on <768px screens) -->
+          <div class="mobile-dock-bar" id="mobile-dock-bar">
+            <button type="button" id="mobile-dock-toggle-btn" class="mobile-dock-toggle-btn" aria-expanded="true">
+              <span class="mobile-dock-toggle-label" id="mobile-dock-toggle-label" data-i18n="deck.mobileHideTray">HIDE BOARDING PASS TRAY ▼</span>
+            </button>
+            <button type="button" id="mobile-end-turn-quick-btn" class="mobile-end-turn-quick-btn" data-i18n="deck.passTurn">PASS TURN</button>
+          </div>
+
+          <div class="deck-status-col">
+            <div class="deck-col-label" data-i18n="deck.turnActionLabel">TURN ACTION (CHOOSE ONE)</div>
+            <div class="action-economy">
+              <div class="econ-option" id="econ-gate">
+                <span class="econ-key">A</span>
+                <span data-i18n="deck.claimGateOpt">Claim 1 Gate</span>
+              </div>
+              <div class="econ-or" data-i18n="deck.orLabel">&mdash; OR &mdash;</div>
+              <div class="econ-option" id="econ-card">
+                <span class="econ-key">B</span>
+                <span data-i18n="deck.playCouponOpt">Play 1 Coupon</span>
+              </div>
+            </div>
+            <div class="deck-hint" id="turn-phase-hint" data-i18n="deck.awaitingOrders">Awaiting your orders, Captain.</div>
+          </div>
+
+          <div class="hand-container-col">
+            <div class="hand-header">
+              <span class="deck-col-label"><span data-i18n="deck.couponsHeader">FLIGHT COUPONS / ACTION CARDS</span> (<span id="hand-count">0</span>/3)</span>
+              <span class="hand-sub" data-i18n="deck.couponsSub">Auto-draw 1 per turn &bull; swipe or hover for briefing &bull; oldest coupon voided above 3</span>
+            </div>
+            <div id="player-hand" class="player-hand">
+              <!-- Player's Action Cards rendered here -->
+            </div>
+          </div>
+
+          <div class="deck-buttons-col">
+            <div class="deck-tally" title="Physical coupon deck: draw pile reshuffles from the discard pile when exhausted">
+              <div class="tally-cell"><span data-i18n="deck.drawPile">DRAW PILE</span><strong id="deck-remaining">0</strong></div>
+              <div class="tally-cell"><span data-i18n="deck.discardPile">DISCARD</span><strong id="discard-count">0</strong></div>
+            </div>
+            <button type="button" id="end-turn-btn" class="btn-deck-primary" title="Pass or end your turn (Spacebar)">
+              <span class="btn-main-text" id="end-turn-main" data-i18n="deck.passTurn">PASS TURN</span>
+              <span class="btn-sub-text" id="end-turn-sub" data-i18n="deck.takeNoAction">Take no action &#10153;</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- PERMANENT VINTAGE NEWSREEL / TELETYPE NEWS TICKER -->
+    <footer id="news-ticker-bar" class="news-ticker-bar" aria-label="Jet Age World News Ticker">
+      <div class="ticker-badge">
+        <span class="ticker-pulse"></span>
+        <span data-i18n="ticker.worldWire">WORLD WIRE</span>
+      </div>
+      <div class="ticker-viewport">
+        <div id="ticker-track" class="ticker-track">
+          <!-- Populated dynamically with scrolling retro-futuristic headlines -->
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ================= TRANSIENT TOAST STACK (HAND OVERFLOW, GUARDS) ================= -->
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <!-- ================= BREAKING BULLETIN BROADCAST TAKEOVER ================= -->
+  <div id="world-card-modal" class="modal-overlay breaking-overlay" role="dialog" aria-labelledby="world-modal-title">
+    <div class="broadcast-frame">
+      <div class="scanlines" aria-hidden="true"></div>
+      <div class="tv-vignette" aria-hidden="true"></div>
+
+      <div class="breaking-banner">
+        <span class="rec-dot" aria-hidden="true"></span>
+        <span class="banner-text" data-i18n="broadcast.breakingBanner">BREAKING BULLETIN</span>
+        <span class="banner-round"><span data-i18n="hud.roundLabel">ROUND</span> <span id="world-modal-round">1</span></span>
+      </div>
+
+      <div class="broadcast-body">
+        <div id="anchor-stage" class="anchor-stage anchor-enter-slide-left" data-anchor-id="classic_50s">
+          <!-- Dynamic news anchor slot (rotates across 4 distinct anchors) -->
+          <div id="anchor-svg-slot" class="anchor-svg-slot">
+            <svg class="news-anchor" viewBox="0 0 200 210" role="img" aria-label="Television news anchor">
+              <defs>
+                <pattern id="houndstooth" width="10" height="10" patternUnits="userSpaceOnUse">
+                  <rect width="10" height="10" fill="#EDEAE2" />
+                  <path d="M0 0h5v5H0zM5 5h5v2L7 10H5zM0 5l3-2v2z" fill="#181818" />
+                </pattern>
+              </defs>
+              <!-- Studio backdrop -->
+              <rect x="0" y="0" width="200" height="210" fill="#1B1B1B" />
+              <circle cx="100" cy="86" r="74" fill="#2A2A2A" />
+              <path d="M18 150h164v60H18z" fill="#232323" />
+              <!-- Houndstooth jacket + lapels + tie -->
+              <path d="M30 210c0-34 28-52 70-52s70 18 70 52z" fill="url(#houndstooth)" stroke="#111111" stroke-width="2.5" />
+              <path d="M72 160l28 34 28-34-12-2-16 22-16-22z" fill="#111111" />
+              <path d="M84 160h32l-16 26z" fill="#F6F4F0" />
+              <path d="M96 170h8l4 40H92z" fill="var(--brand-primary)" />
+              <!-- Neck + head -->
+              <path d="M90 128h20v22H90z" fill="#E8B98F" />
+              <ellipse cx="100" cy="92" rx="38" ry="44" fill="#F2C79C" />
+              <!-- Slicked-back 50s pompadour / bouffant hair -->
+              <path d="M58 78c0-34 18-48 44-48 22 0 38 12 40 44-6-16-20-22-40-22-15 0-26 4-32 14z" fill="#231A12" />
+              <path d="M66 44c12-10 34-12 52-4" stroke="#4A3828" stroke-width="3" fill="none" stroke-linecap="round" />
+              <!-- Heavy black-rimmed glasses -->
+              <g stroke="#111111" stroke-width="5.5" fill="none">
+                <rect x="63" y="77" width="31" height="24" rx="4" fill="#CFE6EA" fill-opacity="0.55" />
+                <rect x="106" y="77" width="31" height="24" rx="4" fill="#CFE6EA" fill-opacity="0.55" />
+                <path d="M94 89h12" />
+                <path d="M63 85 51 81M137 85l12-4" />
+              </g>
+              <circle cx="79" cy="89" r="4" fill="#111111" />
+              <circle cx="121" cy="89" r="4" fill="#111111" />
+              <!-- Brow + nose -->
+              <path d="M67 69h26M107 69h26" stroke="#231A12" stroke-width="4" />
+              <path d="M100 97v10h7" stroke="#D8A77B" stroke-width="3" fill="none" />
+              <!-- Animated mouth (ry driven by the bulletin script) -->
+              <ellipse id="anchor-mouth" cx="100" cy="120" rx="12" ry="2" fill="#7E2B2B" />
+              <!-- Vintage omnidirectional broadcast microphone -->
+              <g>
+                <rect x="128" y="150" width="10" height="46" rx="4" fill="#4A4A4A" />
+                <path d="M118 140h30v18h-30z" fill="var(--brand-primary)" />
+                <text x="133" y="153" font-family="monospace" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">WAIR</text>
+                <ellipse cx="133" cy="132" rx="15" ry="12" fill="#8E9499" stroke="#232323" stroke-width="2" />
+                <path d="M120 128h26M120 132h26M120 136h26" stroke="#2A2A2A" stroke-width="2" />
+              </g>
+            </svg>
+          </div>
+          <div id="anchor-plate" class="anchor-plate">BIFF CONROY &bull; CHIEF AVIATION CORRESPONDENT</div>
+        </div>
+
+        <div id="broadcast-speech-bubble" class="speech-bubble" data-anchor-style="classic_50s">
+          <div id="anchor-quirk-banner" class="anchor-quirk-banner">&ldquo;GOOD EVENING, JET-SETTERS &mdash; FLASH WIRE FROM THE ROTUNDA:&rdquo;</div>
+          <div class="bubble-category" id="world-modal-category" data-i18n="broadcast.category">GLOBAL AVIATION EVENT</div>
+          <h2 id="world-modal-title" class="world-modal-title">HOLIDAY RUSH</h2>
+          <p id="world-modal-desc" class="world-modal-desc">
+            Transatlantic vacation demand surges! All airlines earn DOUBLE passenger output.
+          </p>
+          <div id="world-modal-impact" class="world-modal-impact"></div>
+        </div>
+      </div>
+
+      <div class="broadcast-footer">
+        <div class="station-id">
+          <span id="world-modal-icon" class="station-icon"></span>
+          <span data-i18n="broadcast.stationId">WAIR-TV &bull; JET AGE NEWS DESK &bull; BULLETINS EVERY 3 ROUNDS</span>
+        </div>
+        <button type="button" id="ack-world-card-btn" class="btn-primary" data-i18n="broadcast.dismissBtn">
+          DISMISS &amp; RESUME FLIGHT OPS
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SETTINGS (AUDIO & PRESENTATION) ================= -->
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title">
+    <div class="settings-card">
+      <div class="modal-top-bar">
+        <h2 id="settings-title" data-i18n="settings.title">CABIN SETTINGS &amp; AUDIO CONSOLE</h2>
+        <button type="button" id="close-settings-btn" class="btn-close-x" aria-label="Close settings">✕</button>
+      </div>
+
+      <div class="settings-body">
+        <p class="settings-note" data-i18n="settings.note">
+          Every sound in Air Superiority is synthesized live via custom Web Audio instruments &mdash;
+          featuring a bossa-nova &amp; Jet Age jazz score with 4-phase turn escalation and mechanical split-flap effects.
+        </p>
+
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong data-i18n="settings.musicTitle">DYNAMIC LOUNGE SOUNDTRACK</strong>
+            <span data-i18n="settings.musicDesc">Custom phrase arranger with 4-phase turn intensity escalation</span>
+          </div>
+          <button type="button" id="set-music-toggle" class="toggle-switch is-on" role="switch" aria-checked="true">
+            <span class="toggle-knob"></span><span class="toggle-text">ON</span>
+          </button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong data-i18n="settings.musicVolTitle">MUSIC VOLUME</strong>
+            <span data-i18n="settings.musicVolDesc">Cabin background level</span>
+          </div>
+          <input type="range" id="music-volume" class="retro-slider slim" min="0" max="100" value="50" />
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong data-i18n="settings.sfxTitle">SOUND EFFECTS</strong>
+            <span data-i18n="settings.sfxDesc">Split-flap clicks, seatbelt chimes, gate stamps, teletype</span>
+          </div>
+          <button type="button" id="set-sfx-toggle" class="toggle-switch is-on" role="switch" aria-checked="true">
+            <span class="toggle-knob"></span><span class="toggle-text">ON</span>
+          </button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong data-i18n="settings.sfxVolTitle">SFX VOLUME</strong>
+            <span data-i18n="settings.sfxVolDesc">Mechanical console level</span>
+          </div>
+          <input type="range" id="sfx-volume" class="retro-slider slim" min="0" max="100" value="80" />
+        </div>
+      </div>
+
+      <div class="rules-footer">
+        <button type="button" id="close-settings-bottom-btn" class="btn-primary" data-i18n="settings.returnBtn">RETURN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HOW TO PLAY — 1950s FLIGHT SAFETY CARD ================= -->
+  <div id="howto-modal" class="modal-overlay" role="dialog" aria-labelledby="howto-title">
+    <div class="safety-card">
+      <div class="safety-head">
+        <div>
+          <div class="safety-eyebrow" data-i18n="howto.eyebrow">PASSENGER SAFETY &amp; OPERATIONS CARD</div>
+          <h2 id="howto-title" data-i18n="howto.title">HOW TO PLAY &mdash; IN THE EVENT OF A GATE WAR</h2>
+        </div>
+        <button type="button" id="close-howto-btn" class="btn-close-x" aria-label="Close how to play">✕</button>
+      </div>
+
+      <div class="safety-grid">
+        <div class="safety-step">
+          <div class="step-figure" aria-hidden="true">
+            <svg viewBox="0 0 80 80"><circle cx="40" cy="20" r="11" fill="#111"/><path d="M26 74V44a14 14 0 0 1 28 0v30z" fill="#111"/><path d="M54 50l18-10" stroke="var(--brand-primary)" stroke-width="6" stroke-linecap="round"/><circle cx="72" cy="40" r="7" fill="var(--brand-primary)"/></svg>
+          </div>
+          <div class="step-number">01</div>
+          <h3 data-i18n="howto.step1Title">CLAIM A GATE</h3>
+          <p data-i18n="howto.step1Desc">Tap or click any unclaimed gate pin on the blueprint to plant your airline pin and collect inaugural passengers.</p>
+        </div>
+
+        <div class="safety-step">
+          <div class="step-figure" aria-hidden="true">
+            <svg viewBox="0 0 80 80"><circle cx="30" cy="20" r="11" fill="#111"/><path d="M16 74V44a14 14 0 0 1 28 0v30z" fill="#111"/><rect x="46" y="30" width="26" height="34" rx="2" fill="var(--brand-primary)" transform="rotate(10 59 47)"/></svg>
+          </div>
+          <div class="step-number">02</div>
+          <h3 data-i18n="howto.step2Title">OR PLAY ONE PASS</h3>
+          <p data-i18n-html="howto.step2Desc">Deploy a single boarding pass instead. <strong>One action per turn</strong> &mdash; a gate claim locks your passes, and a pass locks the board.</p>
+        </div>
+
+        <div class="safety-step">
+          <div class="step-figure" aria-hidden="true">
+            <svg viewBox="0 0 80 80"><circle cx="20" cy="30" r="8" fill="#111"/><circle cx="44" cy="22" r="8" fill="#111"/><circle cx="62" cy="46" r="8" fill="#111"/><path d="M20 30 44 22l18 24" stroke="var(--brand-primary)" stroke-width="5" fill="none"/><path d="M14 66h54" stroke="#111" stroke-width="5"/></svg>
+          </div>
+          <div class="step-number">03</div>
+          <h3 data-i18n="howto.step3Title">CHAIN YOUR ROUTES</h3>
+          <p data-i18n-html="howto.step3Desc">Each connected neighbour you also own compounds that gate's output by <strong>+25%</strong>. Contiguous chains glow in your livery.</p>
+        </div>
+
+        <div class="safety-step">
+          <div class="step-figure" aria-hidden="true">
+            <svg viewBox="0 0 80 80"><rect x="10" y="14" width="44" height="30" rx="3" fill="#111"/><path d="M18 52h30M18 60h22" stroke="#111" stroke-width="5"/><circle cx="64" cy="26" r="12" fill="var(--brand-primary)"/><path d="M64 18v10h7" stroke="#fff" stroke-width="3" fill="none"/></svg>
+          </div>
+          <div class="step-number">04</div>
+          <h3 data-i18n="howto.step4Title">WATCH THE BULLETINS</h3>
+          <p data-i18n="howto.step4Desc">Every 3 rounds the newsroom breaks in with a global directive that swings every carrier's output.</p>
+        </div>
+
+        <div class="safety-step">
+          <div class="step-figure" aria-hidden="true">
+            <svg viewBox="0 0 80 80"><path d="M40 8l9 20 22 2-16 15 5 22-20-11-20 11 5-22L9 30l22-2z" fill="var(--brand-primary)"/><path d="M10 72h60" stroke="#111" stroke-width="5"/></svg>
+          </div>
+          <div class="step-number">05</div>
+          <h3 data-i18n="howto.step5Title">WIN THE TERMINAL</h3>
+          <p data-i18n="howto.step5Desc">Take a strict majority of the terminal's gates for sudden-death victory, or lead on total passengers when the schedule runs out.</p>
+        </div>
+
+        <div class="safety-step warn">
+          <div class="step-figure" aria-hidden="true">
+            <svg viewBox="0 0 80 80"><path d="M40 8 74 70H6z" fill="var(--brand-primary)"/><path d="M40 30v22M40 58v6" stroke="#fff" stroke-width="6"/></svg>
+          </div>
+          <div class="step-number">06</div>
+          <h3 data-i18n="howto.step6Title">MIND THE TRAY</h3>
+          <p data-i18n-html="howto.step6Desc">You draw 1 pass per turn and may hold only <strong>3</strong>. A 4th pass shreds the oldest one automatically.</p>
+        </div>
+      </div>
+
+      <div class="rules-footer">
+        <button type="button" id="close-howto-bottom-btn" class="btn-primary" data-i18n="howto.returnBtn">RETURN TO TITLE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FLIGHT MANUAL / RULES MODAL ================= -->
+  <div id="rules-modal" class="modal-overlay" role="dialog" aria-labelledby="rules-modal-title">
+    <div class="rules-modal-card">
+      <div class="modal-top-bar">
+        <h2 id="rules-modal-title" data-i18n="rules.title">ARCHITECTURAL &amp; FLIGHT MANUAL — AIR SUPERIORITY</h2>
+        <button type="button" id="close-rules-btn" class="btn-close-x" aria-label="Close Flight Manual">✕</button>
+      </div>
+      <div class="rules-content-grid">
+        <div class="rules-block">
+          <h3 data-i18n="rules.sec1Title">1. TERMINAL TOPOLOGY &amp; ROUTE SYNERGY</h3>
+          <p data-i18n-html="rules.sec1Intro">
+            Every match drafts one of three bespoke terminal archetypes &mdash; <strong>Central Hub &amp; Spokes</strong>, <strong>Dual Concourse Y-Shape</strong>, or <strong>Pier Ring / Satellite</strong> &mdash; each with 16 interconnected gates.
+          </p>
+          <ul>
+            <li data-i18n-html="rules.sec1Item1"><strong>Route Synergy:</strong> Every directly connected corridor between two gates of the <em>same</em> airline compounds that gate's output by <strong>+25%</strong> (×1.25 per link, multiplying). Contiguous chains pay enormous dividends.</li>
+            <li data-i18n-html="rules.sec1Item2"><strong>Pulsing Flight Paths:</strong> Connected gates you control light up as vibrant pulsing routes in your livery colour, so territory control is readable at a glance.</li>
+            <li data-i18n-html="rules.sec1Item3"><strong>Pan &amp; Zoom:</strong> Drag with one finger or mouse anywhere on the blueprint to pan the camera. Pinch with two fingers, scroll wheel, or use the on-screen <strong>+ / − / 100%</strong> buttons to zoom.</li>
+            <li data-i18n-html="rules.sec1Item4"><strong>3D Gate Pins:</strong> Claimed gates display high-contrast 3D pins embossed with the carrier's emblem. Tap or hover over any pin to inspect owner and passenger throughput.</li>
+            <li data-i18n-html="rules.sec1Item5"><strong>Commuter Agents:</strong> Watch 1950s UPA-style animated commuters walk between connected gates and react to one another with micro-interactions!</li>
+          </ul>
+        </div>
+        <div class="rules-block">
+          <h3 data-i18n="rules.sec2Title">2. DUAL WIN CONDITIONS</h3>
+          <ul>
+            <li data-i18n-html="rules.sec2Item1"><strong>Sudden Death (Gate Majority):</strong> Any carrier that controls a strict majority of all gates on the board (<strong>9 or more of the 16 gates</strong>) achieves immediate terminal monopoly and wins on the spot.</li>
+            <li data-i18n-html="rules.sec2Item2"><strong>Turn Limit (Passenger Supremacy):</strong> If no airline achieves a 9-gate majority before the final round concludes (20 or 30 rounds), the carrier with the <strong>highest total passengers</strong> wins.</li>
+          </ul>
+        </div>
+        <div class="rules-block">
+          <h3 data-i18n="rules.sec3Title">3. TURN STRUCTURE &mdash; ONE ACTION PER TURN</h3>
+          <p data-i18n-html="rules.sec3Intro">Turns proceed sequentially: <strong>Active Captain &#10153; Rival Syndicate / Next Captain &#10153; World Bulletin</strong>.</p>
+          <ul>
+            <li data-i18n-html="rules.sec3Item1"><strong>Automatic Boarding:</strong> At the start of a carrier's turn, every gate it controls boards passengers, multiplied by Route Synergy.</li>
+            <li data-i18n-html="rules.sec3Item2"><strong>Automatic Draw:</strong> The active carrier then draws exactly <strong>1 Flight Coupon</strong>. Hands are capped at <strong>3 coupons</strong>; drawing a 4th automatically voids the <strong>oldest</strong> coupon in hand (FIFO).</li>
+            <li data-i18n-html="rules.sec3Item3"><strong>Exactly One Action:</strong> Claim <strong>one unclaimed gate</strong> <em>or</em> deploy <strong>one Flight Coupon</strong> &mdash; never both. Choosing one immediately locks out the other for that turn.</li>
+            <li data-i18n-html="rules.sec3Item4"><strong>Pass / End Turn:</strong> If no action can or will be taken, hit <strong>PASS TURN</strong> (or the Spacebar) to hand control to the next carrier.</li>
+          </ul>
+        </div>
+
+        <div class="rules-block">
+          <h3 data-i18n="rules.sec4Title">4. THE TWELVE FLIGHT COUPONS</h3>
+          <ul class="coupon-rules-list">
+            <li data-i18n-html="rules.card1"><strong>Gate Change:</strong> Convert one opponent-controlled gate to your airline.</li>
+            <li data-i18n-html="rules.card2"><strong>Runway Maintenance:</strong> Close any gate &mdash; passenger generation disabled for 2 full rounds.</li>
+            <li data-i18n-html="rules.card3"><strong>Lounge Upgrade:</strong> Permanently double one of your gates' base passenger output.</li>
+            <li data-i18n-html="rules.card4"><strong>Charter Buyout:</strong> Instantly claim any unclaimed gate with an immediate bonus boarding wave.</li>
+            <li data-i18n-html="rules.card5"><strong>Baggage Strike:</strong> Siphon 25% (max 400) of a rival carrier's accumulated passengers.</li>
+            <li data-i18n-html="rules.card6"><strong>Direct Flight Charter:</strong> Immediate lump sum of <strong>+150 passengers</strong>.</li>
+            <li data-i18n-html="rules.card7"><strong>Terminal Expansion:</strong> Spawn 1 new neutral gate wired into the nearest corridor.</li>
+            <li data-i18n-html="rules.card8"><strong>FAA Audit:</strong> Every opposing carrier discards their oldest coupon.</li>
+            <li data-i18n-html="rules.card9"><strong>Holding Pattern:</strong> Freeze a target gate for 1 round and siphon +90 passengers from delayed traffic.</li>
+            <li data-i18n-html="rules.card10"><strong>Supersonic Jet:</strong> Permanently boost one of your gates by +60 base PAX and board an instant supersonic wave.</li>
+            <li data-i18n-html="rules.card11"><strong>Smear Campaign:</strong> Sabotage a rival carrier's PR &mdash; drain 20% of their passengers and void their newest coupon.</li>
+            <li data-i18n-html="rules.card12"><strong>Hostile Takeover:</strong> Seize an opponent's non-shielded gate and immediately collect 100% of its base passenger yield.</li>
+          </ul>
+        </div>
+        <div class="rules-block">
+          <h3 data-i18n="rules.sec5Title">5. WORLD WIRE &amp; RIVAL SYNDICATES</h3>
+          <ul>
+            <li data-i18n-html="rules.sec5Item1"><strong>World Deck Events:</strong> Drawn every 3 rounds, impacting all carriers simultaneously (e.g., <em>Pilot Shortage</em> halves capacity; <em>Holiday Rush</em> doubles output).</li>
+            <li data-i18n-html="rules.sec5Item2"><strong>Easy Syndicate:</strong> Picks opportunistic gates and occasionally overlooks stronger coupon plays.</li>
+            <li data-i18n-html="rules.sec5Item3"><strong>Normal Syndicate:</strong> Evaluates every legal move &mdash; gate claim versus each coupon &mdash; and commits to the strongest play.</li>
+            <li data-i18n-html="rules.sec5Item4"><strong>Hard Syndicate:</strong> Ruthless strategic calculation weighted toward blocking and sabotaging the leading carrier.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rules-footer">
+        <button type="button" id="close-rules-bottom-btn" class="btn-primary" data-i18n="rules.returnBtn">RETURN TO TERMINAL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PASS-AND-PLAY PRIVACY INTERSTITIAL OVERLAY ================= -->
+  <div id="pass-interstitial-modal" class="modal-overlay pass-interstitial-overlay" role="dialog" aria-modal="true" aria-labelledby="interstitial-boarding-title">
+    <div class="interstitial-ticket-card">
+      <div class="interstitial-top-strip">
+        <span class="interstitial-classification" data-i18n="interstitial.classification">CONFIDENTIAL FLIGHT MANIFEST &bull; COCKPIT HANDOVER</span>
+        <span class="interstitial-round-tag" id="interstitial-round-tag">ROUND 01</span>
+      </div>
+
+      <div class="interstitial-body">
+        <div class="interstitial-emblem-badge" id="interstitial-emblem-slot"></div>
+        <div class="interstitial-gate-pill" data-i18n="interstitial.gatePill">BOARDING CALL &bull; GATE A1</div>
+        <h2 id="interstitial-boarding-title" class="interstitial-boarding-title">
+          Flight TRANS WORLD AIR is now boarding at Gate A1.
+        </h2>
+        <p class="interstitial-privacy-note" data-i18n="interstitial.privacyNote">
+          Flight coupons and tactical hand telemetry are sealed during cockpit handover. Ensure rival captains have stepped back from the terminal console before unsealing your dispatch tray.
+        </p>
+      </div>
+
+      <div class="interstitial-footer">
+        <button type="button" id="interstitial-ready-btn" class="btn-primary interstitial-ready-btn">
+          <span id="interstitial-ready-btn-text">Click when TRANS WORLD AIR has the controls</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M2 12 L22 4 L15 21 L11 14 L2 12 Z" fill="currentColor" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GAME OVER / VICTORY MODAL ================= -->
+  <div id="game-over-modal" class="modal-overlay" role="dialog" aria-labelledby="gameover-title">
+    <div class="gameover-card">
+      <div class="gameover-crest" id="gameover-logo-slot"></div>
+      <div class="gameover-eyebrow" id="gameover-reason-badge">SUDDEN DEATH TERMINAL MAJORITY</div>
+      <h2 id="gameover-title" class="gameover-title">TRANS WORLD AIR TRIUMPHS!</h2>
+      <p id="gameover-subtitle" class="gameover-subtitle">
+        Your airline has established undisputed dominance over the international hub.
+      </p>
+
+      <div id="final-standings-table" class="final-standings-table">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="gameover-actions">
+        <button type="button" id="rematch-btn" class="btn-primary" data-i18n="gameover.rematchBtn">
+          NEW TERMINAL HUB (REMATCH)
+        </button>
+        <button type="button" id="gameover-menu-btn" class="btn-secondary" data-i18n="gameover.customizeBtn">
+          CARRIER CUSTOMIZATION
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
